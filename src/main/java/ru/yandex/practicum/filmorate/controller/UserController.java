@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 
 import java.util.Collection;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -26,7 +25,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public Optional<User> findUserById(@PathVariable Long userId) {
+    public User findUserById(@PathVariable Long userId) {
         log.info("Запрос на получение пользователя по id");
         return userService.findUserById(userId);
     }

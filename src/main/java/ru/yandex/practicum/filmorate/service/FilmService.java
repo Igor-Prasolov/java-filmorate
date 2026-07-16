@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.validation.Film.ValidationFilms;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -36,37 +35,22 @@ public class FilmService {
             log.warn("Ошибка обновления фильма: отсутствует id");
             throw new ValidationException("Отсутствует id");
         }
-        if (!filmStorage.existsById(film.getId())) {
-            log.warn("Ошибка обновления фильма: фильм с ID {} не найден", film.getId());
-            throw new NotFoundException("Фильм с id " + film.getId() + " не найден");
-        }
+        validateFilmExist(film.getId(), "Ошибка обновления фильма: фильм с ID {} не найден");
         ValidationFilms.validReleaseDate(film.getReleaseDate());
         return filmStorage.update(film);
     }
 
     public void addLike(Long filmId, Long userId) {
-        if (!filmStorage.existsById(filmId)) {
-            log.warn("Ошибка лайка: фильм с ID {} не найден", filmId);
-            throw new NotFoundException("Фильм не найден");
-        }
-        if (userService.findUserById(userId).isEmpty()) {
-            log.warn("Ошибка лайка: пользователь с ID {} не найден", userId);
-            throw new NotFoundException("Пользователь не найден");
-        }
+        validateFilmExist(filmId, "Ошибка лайка: фильм с ID {} не найден");
+        validateUserExists(userId, "Ошибка лайка: пользователь с ID {} не найден");
 
         likes.computeIfAbsent(filmId, k -> new HashSet<>()).add(userId);
         log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
     }
 
     public void removeLike(Long filmId, Long userId) {
-        if (!filmStorage.existsById(filmId)) {
-            log.warn("Ошибка удаления лайка: фильм с ID {} не найден", filmId);
-            throw new NotFoundException("Фильм с ID " + filmId + " не найден");
-        }
-        if (userService.findUserById(userId).isEmpty()) {
-            log.warn("Ошибка удаления лайка: пользователь с ID {} не найден", userId);
-            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
-        }
+        validateFilmExist(filmId, "Ошибка удаления лайка: фильм с ID {} не найден");
+        validateUserExists(userId, "Ошибка удаления лайка: пользователь с ID {} не найден");
 
         Set<Long> filmLikes = likes.get(filmId);
         if (filmLikes != null) {
@@ -83,14 +67,34 @@ public class FilmService {
             count = 10;
         }
 
-        return filmStorage.findAll().stream()
-                .filter(film -> likes.getOrDefault(film.getId(), Set.of()).size() > 0)
-                .sorted((f1, f2) -> {
-                    int likes1 = likes.getOrDefault(f1.getId(), Set.of()).size();
-                    int likes2 = likes.getOrDefault(f2.getId(), Set.of()).size();
-                    return Integer.compare(likes2, likes1);
-                })
+        List<Long> popular = likes.entrySet().stream()
+                .sorted((l1, l2) ->
+                        Integer.compare(l2.getValue().size(), l1.getValue().size()))
                 .limit(count)
-                .collect(Collectors.toList());
+                .map(Map.Entry::getKey)
+                .toList();
+
+        List<Film> result = new ArrayList<>();
+        for (Long id :popular) {
+            Optional<Film> film = filmStorage.findById(id);
+            film.ifPresent(result::add);
+            }
+
+        return result;
+    }
+
+
+    private void validateFilmExist(Long filmId, String logMessage) {
+        if (!filmStorage.existsById(filmId)) {
+            log.warn(logMessage, filmId);
+            throw new NotFoundException("Фильм с ID " + filmId + " не найден");
+        }
+    }
+
+    private void validateUserExists(Long userId, String logMessage) {
+        if (userService.findUserById(userId) == null) {
+            log.warn(logMessage, userId);
+            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
+        }
     }
 }
