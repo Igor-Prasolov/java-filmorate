@@ -94,4 +94,6 @@ class UserTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
     }
+
+
 }

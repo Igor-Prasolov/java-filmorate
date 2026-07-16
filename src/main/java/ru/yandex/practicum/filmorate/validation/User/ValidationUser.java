@@ -4,13 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Map;
+import java.util.Collection;
 
 @Slf4j
 public class ValidationUser {
 
-    public static void validUniqueEmail(String email, Long id, Map<Long, User> users) {
-        for (User u : users.values()) {
+    public static void validUniqueEmail(String email, Long id, Collection<User> users) {
+        for (User u : users) {
             if (id != null && u.getId().equals(id)) {
                 continue;
             }
