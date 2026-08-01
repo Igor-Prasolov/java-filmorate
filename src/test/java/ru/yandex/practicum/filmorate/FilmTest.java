@@ -5,9 +5,10 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.film.Film;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,6 +31,7 @@ class FilmTest {
         film.setDescription("Отличный фильм");
         film.setReleaseDate(LocalDate.of(2010, 7, 16));
         film.setDuration(148);
+        film.setGenres(new HashSet<>());
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertTrue(violations.isEmpty());
