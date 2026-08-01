@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user.Friendship;
+import ru.yandex.practicum.filmorate.model.user.FriendshipStatus;
+import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import ru.yandex.practicum.filmorate.validation.User.ValidationUser;
@@ -17,7 +19,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
-    private final Map<Long, Set<Long>> friends = new HashMap<>();
+    private final Map<Long, Set<Friendship>> friends = new HashMap<>();
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -58,9 +60,19 @@ public class UserService {
             throw new ValidationException("Нельзя добавить себя в друзья");
         }
 
-        friends.computeIfAbsent(userId, k -> new HashSet<>()).add(friendId);
-        friends.computeIfAbsent(friendId, k -> new HashSet<>()).add(userId);
-        log.info("Пользователи {} и {} стали друзьями", userId, friendId);
+        Friendship f1 = new Friendship();
+        f1.setUserId(userId);
+        f1.setFriendId(friendId);
+        f1.setStatus(FriendshipStatus.PENDING);
+
+        Friendship f2 = new Friendship();
+        f2.setUserId(friendId);
+        f2.setFriendId(userId);
+        f2.setStatus(FriendshipStatus.PENDING);
+
+        friends.computeIfAbsent(userId, k -> new HashSet<>()).add(f1);
+        friends.computeIfAbsent(friendId, k -> new HashSet<>()).add(f2);
+        log.info("Пользователь {} отправил запрос на добавление в друзья пользователю {}", userId, friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
@@ -71,13 +83,23 @@ public class UserService {
         validateUserExists(userId, "Ошибка удаления из друзей: пользователь с ID {} не найден");
         validateUserExists(friendId, "Ошибка удаления из друзей: пользователь с ID {} не найден");
 
-        Set<Long> userFriends = friends.get(userId);
+        Set<Friendship> userFriends = friends.get(userId);
         if (userFriends != null) {
-            userFriends.remove(friendId);
+            for (Friendship f : userFriends) {
+                if (f.getFriendId().equals(friendId)) {
+                    userFriends.remove(f);
+                    break;
+                }
+            }
         }
-        Set<Long> friendFriends = friends.get(friendId);
+        Set<Friendship> friendFriends = friends.get(friendId);
         if (friendFriends != null) {
-            friendFriends.remove(userId);
+            for (Friendship f : friendFriends) {
+                if (f.getFriendId().equals(userId)) {
+                    friendFriends.remove(f);
+                    break;
+                }
+            }
         }
         log.info("Пользователи {} и {} больше не друзья", userId, friendId);
     }
@@ -85,10 +107,10 @@ public class UserService {
     public Collection<User> findFriends(Long userId) {
         validateUserExists(userId, "Ошибка поиска друга: пользователь с ID {} не найден");
 
-        Set<Long> friendIds = friends.getOrDefault(userId, new HashSet<>());
+        Set<Friendship> friendIds = friends.getOrDefault(userId, new HashSet<>());
         List<User> result = new ArrayList<>();
-        for (Long id : friendIds) {
-            Optional<User> user = userStorage.findById(id);
+        for (Friendship f : friendIds) {
+            Optional<User> user = userStorage.findById(f.getFriendId());
             user.ifPresent(result::add);
         }
         return result;
@@ -98,11 +120,21 @@ public class UserService {
         validateUserExists(userId, "Ошибка поиска общих друзей: пользователь с ID {} не найден");
         validateUserExists(otherId, "Ошибка поиска общих друзей: пользователь с ID {} не найден");
 
-        Set<Long> userFriends = friends.getOrDefault(userId, new HashSet<>());
-        Set<Long> otherFriends = friends.getOrDefault(otherId, new HashSet<>());
+        Set<Friendship> userFriends = friends.getOrDefault(userId, new HashSet<>());
+        Set<Friendship> otherFriends = friends.getOrDefault(otherId, new HashSet<>());
 
-        Set<Long> commonIds = new HashSet<>(userFriends);
-        commonIds.retainAll(otherFriends);
+        Set<Long> userFriendId = new HashSet<>();
+        for (Friendship f : userFriends) {
+            userFriendId.add(f.getFriendId());
+        }
+
+        Set<Long> otherFriendId = new HashSet<>();
+        for (Friendship f : otherFriends) {
+            otherFriendId.add(f.getFriendId());
+        }
+
+        Set<Long> commonIds = new HashSet<>(userFriendId);
+        commonIds.retainAll(otherFriendId);
 
         List<User> result = new ArrayList<>();
         for (Long id : commonIds) {
@@ -110,6 +142,35 @@ public class UserService {
             user.ifPresent(result::add);
         }
         return result;
+    }
+
+    public void approveFriendRequest(Long userId, Long friendId) {
+        validateUserExists(userId, "Ошибка подтверждения запроса в друзья: пользователь с ID {} не найден");
+        validateUserExists(friendId, "Ошибка подтверждения запроса в друзья: пользователь с ID {} не найден");
+
+        Set<Friendship> userFriends = friends.get(userId);
+        if (userFriends != null) {
+            for (Friendship f : userFriends) {
+                if (f.getFriendId().equals(friendId)) {
+                    if (f.getStatus() == FriendshipStatus.PENDING) {
+                        f.setStatus(FriendshipStatus.CONFIRMED);
+                    }
+                }
+            }
+        }
+
+        Set<Friendship> friendFrends = friends.get(friendId);
+        if (friendFrends != null) {
+            for (Friendship f : friendFrends) {
+                if (f.getFriendId().equals(userId)) {
+                    if (f.getStatus() == FriendshipStatus.PENDING) {
+                        f.setStatus(FriendshipStatus.CONFIRMED);
+                    }
+                }
+            }
+        }
+
+        log.info("Пользователь {} подтвердил дружбу с пользователем {}", userId, friendId);
     }
 
     private void validateUserExists(Long userId, String logMessage) {

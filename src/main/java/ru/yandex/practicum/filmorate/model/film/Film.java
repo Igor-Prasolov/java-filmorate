@@ -1,9 +1,10 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.model.film;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 
 @Data
@@ -23,4 +24,10 @@ public class Film {
     @NotNull(message = "Продолжительность фильма не указана")
     @Positive(message = "Продолжительность фильма должна быть положительной")
     private Integer duration;
+
+
+    private Set<Genre> genres;
+
+    private MPA mpa;
+
 }
