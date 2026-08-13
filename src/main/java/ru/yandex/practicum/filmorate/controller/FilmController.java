@@ -30,6 +30,12 @@ public class FilmController {
         return filmService.findPopularFilms(count);
     }
 
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable Long id) {
+        log.info("Запрос на получение фильма по id={}", id);
+        return filmService.findById(id);
+    }
+
     @PostMapping
     public Film createNewFilm(@Valid @RequestBody Film film) {
         log.info("Запрос на создание нового фильма");
