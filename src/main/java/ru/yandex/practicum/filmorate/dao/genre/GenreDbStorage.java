@@ -8,7 +8,10 @@ import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.mappers.GenreRowMapper;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -41,5 +44,18 @@ public class GenreDbStorage implements GenreStorage {
         String sql = "SELECT COUNT(*) FROM genres WHERE id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
+    }
+
+    @Override
+    public List<Genre> findById(List<Long> id) {
+        if (id == null || id.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String sql = "SELECT * FROM genres WHERE id IN (" +
+                id.stream().map(String::valueOf).collect(Collectors.joining(",")) +
+                ")";
+
+        return jdbcTemplate.query(sql, genreRowMapper);
     }
 }

@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.likes;
 
+import ru.yandex.practicum.filmorate.model.film.Film;
+
 import java.util.List;
 
 public interface LikesStorage {
@@ -12,5 +14,5 @@ public interface LikesStorage {
 
     boolean existsLike(Long filmId, Long userId);
 
-    List<Long> findPopularFilmId(int limit);
+    List<Film> findPopularFilm(int limit);
 }

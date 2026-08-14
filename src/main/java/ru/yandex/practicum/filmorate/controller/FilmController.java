@@ -44,6 +44,7 @@ public class FilmController {
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
+        log.info("Запрос на обновление фильма", film);
         return filmService.update(film);
     }
 

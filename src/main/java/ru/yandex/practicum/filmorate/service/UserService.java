@@ -34,67 +34,78 @@ public class UserService {
     }
 
     public User create(User user) {
-        ValidationUser.validUniqueEmail(user.getEmail(), null, userStorage.findAll());
+        validateUniqueEmail(user.getEmail(), null, "create");
         ValidationUser.setNameIsBlank(user);
-        return userStorage.save(user);
+        User saved = userStorage.save(user);
+        log.info("User created: email={}, id={}", saved.getEmail(), saved.getId());
+        return saved;
     }
 
     public User update(User user) {
         if (user.getId() == null) {
-            log.warn("Ошибка обновления: отсутствует ID");
+            log.warn("Update failed: userId is null");
             throw new ValidationException("ID не может быть пустым");
         }
-        if (!userStorage.existsById(user.getId())) {
-            log.warn("Пользователь с ID {} не найден", user.getId());
-            throw new NotFoundException("Пользователь с ID " + user.getId() + " не найден");
-        }
-        ValidationUser.validUniqueEmail(user.getEmail(), user.getId(), userStorage.findAll());
+
+        validateUserExists(user.getId(), "update user");
+        validateUniqueEmail(user.getEmail(), user.getId(), "update");
         ValidationUser.setNameIsBlank(user);
-        return userStorage.update(user);
+
+        User updated = userStorage.update(user);
+        log.info("User updated: email={}, id={}", updated.getEmail(), updated.getId());
+        return updated;
     }
 
     public void addFriend(Long userId, Long friendId) {
-        validateUserExists(userId);
-        validateUserExists(friendId);
+        validateUserExists(userId, "add friend");
+        validateUserExists(friendId, "add friend");
         if (userId.equals(friendId)) {
             throw new ValidationException("Нельзя добавить себя в друзья");
         }
         friendshipStorage.addFriend(userId, friendId);
-        log.info("Пользователь {} добавил друга {}", userId, friendId);
+        log.info("Friend added: userId={}, friendId={}", userId, friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
-        validateUserExists(userId);
-        validateUserExists(friendId);
+        validateUserExists(userId, "remove friend");
+        validateUserExists(friendId, "remove friend");
         friendshipStorage.removeFriend(userId, friendId);
-        log.info("Пользователи {} и {} больше не друзья", userId, friendId);
+
+        log.info("Friend removed: userId={}, friendId={}", userId, friendId);
     }
 
     public Collection<User> findFriends(Long userId) {
-        validateUserExists(userId);
-        List<Long> friendIds = friendshipStorage.findFriendIds(userId);
-        List<User> friends = new ArrayList<>();
-        for (Long id : friendIds) {
-            userStorage.findById(id).ifPresent(friends::add);
-        }
-        return friends;
+        validateUserExists(userId, "find friends");
+
+        log.info("Find friends for userId={}", userId);
+        return friendshipStorage.findFriends(userId);
     }
 
     public Collection<User> findCommonFriends(Long userId, Long otherId) {
-        validateUserExists(userId);
-        validateUserExists(otherId);
-        List<Long> commonIds = friendshipStorage.findCommonFriendIds(userId, otherId);
-        List<User> commonFriends = new ArrayList<>();
-        for (Long id : commonIds) {
-            userStorage.findById(id).ifPresent(commonFriends::add);
+        if (userId.equals(otherId)) {
+            log.warn("Find common friends failed: userId == otherId, userId={}", userId);
         }
-        return commonFriends;
+        validateUserExists(userId, "find common friends");
+        validateUserExists(otherId, "find common friends");
+
+        log.info("Find common friends: userId={}, otherId={}", userId, otherId);
+        return friendshipStorage.findCommonFriend(userId, otherId);
     }
 
-    private void validateUserExists(Long userId) {
+    private void validateUserExists(Long userId, String action) {
         if (!userStorage.existsById(userId)) {
-            log.warn("Пользователь с ID {} не найден", userId);
+            log.warn("User not found: userId={}, action={}", userId, action);
             throw new NotFoundException("Пользователь с ID " + userId + " не найден");
         }
     }
+
+    private void validateUniqueEmail(String email, Long userId, String operation) {
+        Optional<User> user = userStorage.findByEmail(email);
+        if (user.isPresent() && !user.get().getId().equals(userId)) {
+            log.warn("Email already used: email={}, existingUserId={}, operation{}",
+                    email, user.get().getId(), operation);
+            throw new ValidationException("Этот Email уже используется");
+        }
+    }
+
 }

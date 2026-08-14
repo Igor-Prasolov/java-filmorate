@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.dao.friendship;
 
+import ru.yandex.practicum.filmorate.model.user.User;
+
 import java.util.List;
 
 public interface FriendshipStorage {
@@ -7,9 +9,10 @@ public interface FriendshipStorage {
 
     void removeFriend(Long userId, Long friendId);
 
-    List<Long> findFriendIds(Long userId);
-
-    List<Long> findCommonFriendIds(Long userId, Long otherId);
 
     boolean areFriends(Long userId, Long friendId);
+
+    public List<User> findFriends(Long userId);
+
+    public List<User> findCommonFriend(Long userId, Long otherId);
 }

@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.dao.likes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
+import ru.yandex.practicum.filmorate.model.film.Film;
 
 import java.util.List;
 
@@ -11,6 +13,7 @@ import java.util.List;
 public class LikesDbStorage implements LikesStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final FilmRowMapper filmRowMapper;
 
     @Override
     public void addLike(Long filmId, Long userId) {
@@ -38,9 +41,9 @@ public class LikesDbStorage implements LikesStorage {
     }
 
     @Override
-    public List<Long> findPopularFilmId(int limit) {
+    public List<Film> findPopularFilm(int limit) {
         String sql = """
-                SELECT f.id
+                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
                 FROM films f
                 LEFT JOIN likes l ON f.id = l.film_id
                 GROUP BY f.id
@@ -48,7 +51,7 @@ public class LikesDbStorage implements LikesStorage {
                 LIMIT ?
                 """;
 
-        return jdbcTemplate.queryForList(sql, Long.class, limit);
+        return jdbcTemplate.query(sql, filmRowMapper, limit);
     }
 
 }

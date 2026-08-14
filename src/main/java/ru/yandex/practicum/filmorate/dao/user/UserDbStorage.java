@@ -86,7 +86,8 @@ public class UserDbStorage implements UserStorage {
         return count != null && count > 0;
     }
 
-    private Optional<User> findByEmail(String email) {
+    @Override
+    public Optional<User> findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
         try {
             User user = jdbcTemplate.queryForObject(sql, userRowMapper, email);
