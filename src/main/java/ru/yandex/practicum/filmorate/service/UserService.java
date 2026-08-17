@@ -67,6 +67,9 @@ public class UserService {
     }
 
     public void removeFriend(Long userId, Long friendId) {
+        if (userId.equals(friendId)) {
+            log.warn("Remove friends failed: userId == friendId, userId={}", friendId);
+        }
         validateUserExists(userId, "remove friend");
         validateUserExists(friendId, "remove friend");
         friendshipStorage.removeFriend(userId, friendId);
