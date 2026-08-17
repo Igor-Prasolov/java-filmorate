@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.user;
+package ru.yandex.practicum.filmorate.dao.user;
 
 import ru.yandex.practicum.filmorate.model.user.User;
 
@@ -17,5 +17,7 @@ public interface UserStorage {
     void deleteById(Long id);
 
     boolean existsById(Long id);
+
+    public Optional<User> findByEmail(String email);
 }
 
