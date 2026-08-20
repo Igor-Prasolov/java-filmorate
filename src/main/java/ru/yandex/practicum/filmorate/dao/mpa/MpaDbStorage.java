@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.mappers.MpaRowMapper;
-import ru.yandex.practicum.filmorate.model.film.MPA;
+import ru.yandex.practicum.filmorate.model.MPA;
 
 import java.util.Collection;
 import java.util.Optional;

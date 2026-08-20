@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model.film;
+package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;

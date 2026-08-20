@@ -8,9 +8,9 @@ import ru.yandex.practicum.filmorate.dao.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.dao.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.dao.likes.LikesStorage;
-import ru.yandex.practicum.filmorate.model.film.Genre;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.validation.Film.ValidationFilms;
 
 import java.util.*;

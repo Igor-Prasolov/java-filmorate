@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.user;
 
-import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.Optional;

@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
@@ -35,6 +35,9 @@ public class FilmController {
         log.info("Запрос на получение фильма по id={}", id);
         return filmService.findById(id);
     }
+
+
+    // @GetMapping("/director/{directorId}?sortBy=[year,likes]") реализовать, см., в канбан-доске добавление режжисера
 
     @PostMapping
     public Film createNewFilm(@Valid @RequestBody Film film) {

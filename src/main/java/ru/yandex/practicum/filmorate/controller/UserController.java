@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 
@@ -42,6 +42,8 @@ public class UserController {
         log.info("Запрос на получение списка общих друзей");
         return userService.findCommonFriends(id, otherId);
     }
+
+    // @GetMapping("{id}/feed")  реализовать функционал ленты событий
 
     @PostMapping
     public User crateNewUser(@Valid @RequestBody User user) {

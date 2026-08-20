@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.film.MPA;
+import ru.yandex.practicum.filmorate.model.MPA;
 
 import java.util.Collection;
 

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model.user;
+package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

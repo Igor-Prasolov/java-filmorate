@@ -10,10 +10,10 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.mappers.MpaRowMapper;
-import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.model.film.Genre;
-import ru.yandex.practicum.filmorate.model.film.MPA;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -33,7 +33,6 @@ public class FilmsDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findAll() {
         String sql = "SELECT * FROM films";
-        List<Film> filmList = jdbcTemplate.query(sql, filmRowMapper);
         return jdbcTemplate.query(sql, filmRowMapper);
     }
 

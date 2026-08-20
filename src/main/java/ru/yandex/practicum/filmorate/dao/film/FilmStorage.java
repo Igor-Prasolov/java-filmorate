@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.film;
 
-import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model.user;
+package ru.yandex.practicum.filmorate.model.friendship;
 
 public enum FriendshipStatus {
     PENDING, CONFIRMED
