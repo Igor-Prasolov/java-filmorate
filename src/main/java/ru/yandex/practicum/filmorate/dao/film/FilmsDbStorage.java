@@ -125,14 +125,7 @@ public class FilmsDbStorage implements FilmStorage {
         return count != null && count > 0;
     }
 
-    private Long extractMpaId(Film film) {
-        if (film.getMpa() != null) {
-            return film.getMpa().getId();
-        }
-        return null;
-    }
-
-    private void loadFilmMpaAndGenres(Film film) {
+    public void loadFilmMpaAndGenres(Film film) {
         Long mpaId = film.getMpaId();
         if (mpaId != null) {
             String mpaSql = "SELECT * FROM mpa WHERE id = ?";
@@ -151,4 +144,12 @@ public class FilmsDbStorage implements FilmStorage {
         film.setGenres(new LinkedHashSet<>(genreList));
 
     }
+
+    private Long extractMpaId(Film film) {
+        if (film.getMpa() != null) {
+            return film.getMpa().getId();
+        }
+        return null;
+    }
+
 }

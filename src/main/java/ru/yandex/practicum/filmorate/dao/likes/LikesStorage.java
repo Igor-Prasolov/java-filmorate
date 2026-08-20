@@ -15,4 +15,6 @@ public interface LikesStorage {
     boolean existsLike(Long filmId, Long userId);
 
     List<Film> findPopularFilm(int limit);
+
+    List<Film> findCommonFilms(Long userId, Long friendId);
 }

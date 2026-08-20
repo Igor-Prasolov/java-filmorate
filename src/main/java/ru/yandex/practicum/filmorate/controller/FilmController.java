@@ -36,7 +36,11 @@ public class FilmController {
         return filmService.findById(id);
     }
 
-
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId){
+        log.info("Запрос на получение общих фильмов");
+        return filmService.findCommonFilms(userId, friendId);
+    }
     // @GetMapping("/director/{directorId}?sortBy=[year,likes]") реализовать, см., в канбан-доске добавление режжисера
 
     @PostMapping

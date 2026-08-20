@@ -108,6 +108,12 @@ public class FilmService {
                 });
     }
 
+    public Collection<Film> findCommonFilms(Long userId, Long friendId){
+        validateUserExists(userId,"Ошибка вывода: пользователь с ID {} не найден");
+        validateUserExists(friendId,"Ошибка вывода: друг с ID {} не найден");
+        return likesStorage.findCommonFilms(userId,friendId);
+    }
+
 
     private void validateFilmExist(Long filmId, String logMessage) {
         if (!filmStorage.existsById(filmId)) {
