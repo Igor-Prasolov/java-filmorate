@@ -86,14 +86,14 @@ public class FilmsDbStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         String sql = """
-        UPDATE films
-        SET name = ?,
-            description = ?,
-            release_date = ?,
-            duration = ?,
-            mpa_id = ?
-        WHERE id = ?
-        """;
+                UPDATE films
+                SET name = ?,
+                    description = ?,
+                    release_date = ?,
+                    duration = ?,
+                    mpa_id = ?
+                WHERE id = ?
+                """;
         jdbcTemplate.update(sql,
                 film.getName(),
                 film.getDescription(),
@@ -134,12 +134,12 @@ public class FilmsDbStorage implements FilmStorage {
         }
 
         String genreSql = """
-                    SELECT g.id, g.name
-                    FROM genres AS g
-                    JOIN film_genre AS fg ON g.id = fg.genre_id
-                    WHERE fg.film_id = ?
-                    ORDER BY g.id
-                    """;
+                SELECT g.id, g.name
+                FROM genres AS g
+                JOIN film_genre AS fg ON g.id = fg.genre_id
+                WHERE fg.film_id = ?
+                ORDER BY g.id
+                """;
         List<Genre> genreList = jdbcTemplate.query(genreSql, genreRowMapper, film.getId());
         film.setGenres(new LinkedHashSet<>(genreList));
 

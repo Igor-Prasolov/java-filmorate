@@ -30,7 +30,7 @@ public class LikesDbStorage implements LikesStorage {
                        )
                        GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
                        ORDER BY likes_count DESC
-                      """;
+                """;
 
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
         for (Film film : films) {
