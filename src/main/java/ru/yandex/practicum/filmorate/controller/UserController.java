@@ -5,8 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.Feed;
+import ru.yandex.practicum.filmorate.service.FeedService;
 import ru.yandex.practicum.filmorate.service.UserService;
-
 
 import java.util.Collection;
 
@@ -16,7 +17,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-
+    private final FeedService feedService;
 
     @GetMapping
     public Collection<User> findAll() {
@@ -43,7 +44,13 @@ public class UserController {
         return userService.findCommonFriends(id, otherId);
     }
 
-    // @GetMapping("{id}/feed")  реализовать функционал ленты событий
+    @GetMapping("/{id}/feed")
+    public Collection<Feed> getFeedByUser(@PathVariable Long id) {
+        log.info("Запрос на получение ленты");
+
+        userService.findUserById(id);
+        return feedService.getFeedByUser(id);
+    }
 
     @PostMapping
     public User crateNewUser(@Valid @RequestBody User user) {
