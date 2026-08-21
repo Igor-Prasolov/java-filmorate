@@ -86,14 +86,14 @@ public class FilmsDbStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         String sql = """
-        UPDATE films
-        SET name = ?,
-            description = ?,
-            release_date = ?,
-            duration = ?,
-            mpa_id = ?
-        WHERE id = ?
-        """;
+                UPDATE films
+                SET name = ?,
+                    description = ?,
+                    release_date = ?,
+                    duration = ?,
+                    mpa_id = ?
+                WHERE id = ?
+                """;
         jdbcTemplate.update(sql,
                 film.getName(),
                 film.getDescription(),
@@ -125,14 +125,7 @@ public class FilmsDbStorage implements FilmStorage {
         return count != null && count > 0;
     }
 
-    private Long extractMpaId(Film film) {
-        if (film.getMpa() != null) {
-            return film.getMpa().getId();
-        }
-        return null;
-    }
-
-    private void loadFilmMpaAndGenres(Film film) {
+    public void loadFilmMpaAndGenres(Film film) {
         Long mpaId = film.getMpaId();
         if (mpaId != null) {
             String mpaSql = "SELECT * FROM mpa WHERE id = ?";
@@ -141,14 +134,22 @@ public class FilmsDbStorage implements FilmStorage {
         }
 
         String genreSql = """
-                    SELECT g.id, g.name
-                    FROM genres AS g
-                    JOIN film_genre AS fg ON g.id = fg.genre_id
-                    WHERE fg.film_id = ?
-                    ORDER BY g.id
-                    """;
+                SELECT g.id, g.name
+                FROM genres AS g
+                JOIN film_genre AS fg ON g.id = fg.genre_id
+                WHERE fg.film_id = ?
+                ORDER BY g.id
+                """;
         List<Genre> genreList = jdbcTemplate.query(genreSql, genreRowMapper, film.getId());
         film.setGenres(new LinkedHashSet<>(genreList));
 
     }
+
+    private Long extractMpaId(Film film) {
+        if (film.getMpa() != null) {
+            return film.getMpa().getId();
+        }
+        return null;
+    }
+
 }

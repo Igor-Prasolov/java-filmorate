@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao.likes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.film.FilmsDbStorage;
 import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -14,6 +15,29 @@ public class LikesDbStorage implements LikesStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final FilmRowMapper filmRowMapper;
+    private final FilmsDbStorage filmsDbStorage;
+
+    @Override
+    public List<Film> findCommonFilms(Long userId, Long friendId) {
+        String sql = """
+                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id,COUNT (l.user_id) as likes_count
+                FROM films f
+                INNER JOIN likes l ON f.id = l.film_id
+                WHERE  f.id IN (
+                       SELECT film_id FROM likes WHERE user_id = ?
+                       INTERSECT
+                       SELECT film_id FROM likes WHERE user_id = ?
+                       )
+                       GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
+                       ORDER BY likes_count DESC
+                """;
+
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
+        for (Film film : films) {
+            filmsDbStorage.loadFilmMpaAndGenres(film);
+        }
+        return films;
+    }
 
     @Override
     public void addLike(Long filmId, Long userId) {
