@@ -20,6 +20,7 @@ import java.util.*;
 public class UserService {
     private final UserStorage userStorage;
     private final FriendshipStorage friendshipStorage;
+    private final ValidateService validateService;
     private final FeedService feedService;
 
     public Collection<User> findAll() {
@@ -48,7 +49,7 @@ public class UserService {
             throw new ValidationException("ID не может быть пустым");
         }
 
-        validateUserExists(user.getId(), "update user");
+        validateService.validateUserExists(user.getId(), "update user");
         validateUniqueEmail(user.getEmail(), user.getId(), "update");
         ValidationUser.setNameIsBlank(user);
 
@@ -58,8 +59,8 @@ public class UserService {
     }
 
     public void addFriend(Long userId, Long friendId) {
-        validateUserExists(userId, "add friend");
-        validateUserExists(friendId, "add friend");
+        validateService.validateUserExists(userId, "add friend");
+        validateService.validateUserExists(friendId, "add friend");
         if (userId.equals(friendId)) {
             throw new ValidationException("Нельзя добавить себя в друзья");
         }
@@ -79,8 +80,8 @@ public class UserService {
         if (userId.equals(friendId)) {
             log.warn("Remove friends failed: userId == friendId, userId={}", friendId);
         }
-        validateUserExists(userId, "remove friend");
-        validateUserExists(friendId, "remove friend");
+        validateService.validateUserExists(userId, "remove friend");
+        validateService.validateUserExists(friendId, "remove friend");
         friendshipStorage.removeFriend(userId, friendId);
 
         feedService.addEvent(
@@ -94,7 +95,7 @@ public class UserService {
     }
 
     public Collection<User> findFriends(Long userId) {
-        validateUserExists(userId, "find friends");
+        validateService.validateUserExists(userId, "find friends");
 
         log.info("Find friends for userId={}", userId);
         return friendshipStorage.findFriends(userId);
@@ -104,19 +105,13 @@ public class UserService {
         if (userId.equals(otherId)) {
             log.warn("Find common friends failed: userId == otherId, userId={}", userId);
         }
-        validateUserExists(userId, "find common friends");
-        validateUserExists(otherId, "find common friends");
+        validateService.validateUserExists(userId, "find common friends");
+        validateService.validateUserExists(otherId, "find common friends");
 
         log.info("Find common friends: userId={}, otherId={}", userId, otherId);
         return friendshipStorage.findCommonFriend(userId, otherId);
     }
 
-    private void validateUserExists(Long userId, String action) {
-        if (!userStorage.existsById(userId)) {
-            log.warn("User not found: userId={}, action={}", userId, action);
-            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
-        }
-    }
 
     private void validateUniqueEmail(String email, Long userId, String operation) {
         Optional<User> user = userStorage.findByEmail(email);

@@ -5,24 +5,25 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.film.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.dao.likes.LikesStorage;
 import ru.yandex.practicum.filmorate.dao.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.dao.likes.LikesStorage;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.feed.EventOperation;
 import ru.yandex.practicum.filmorate.model.feed.EventType;
 import ru.yandex.practicum.filmorate.validation.Film.ValidationFilms;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
 @Service
 @Slf4j
 public class FilmService {
-    private final UserService userService;
+    private final ValidateService validateService;
     private final LikesStorage likesStorage;
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
@@ -30,19 +31,18 @@ public class FilmService {
     private final FeedService feedService;
 
     public FilmService(@Qualifier("filmsDbStorage") FilmStorage filmStorage,
-                       UserService userService,
                        LikesStorage likesStorage,
                        MpaStorage mpaStorage,
                        GenreStorage genreStorage,
+                       ValidateService validateService,
                        FeedService feedService) {
         this.filmStorage = filmStorage;
-        this.userService = userService;
         this.likesStorage = likesStorage;
         this.mpaStorage = mpaStorage;
         this.genreStorage = genreStorage;
+        this.validateService = validateService;
         this.feedService = feedService;
     }
-
 
     public Collection<Film> findAll() {
         log.info("Find all films");
@@ -64,7 +64,7 @@ public class FilmService {
             log.warn("Update failed: filmId is null");
             throw new ValidationException("Отсутствует id");
         }
-        validateFilmExist(film.getId(), "Ошибка обновления фильма: фильм с ID {} не найден");
+        validateService.validateFilmExist(film.getId(), "Ошибка обновления фильма: фильм с ID {} не найден");
         ValidationFilms.validReleaseDate(film.getReleaseDate());
         validateMpaExists(film, "Ошибка обновления фильма: рейтинг с ID {} не найден");
         validateGenresExist(film);
@@ -72,8 +72,8 @@ public class FilmService {
     }
 
     public void addLike(Long filmId, Long userId) {
-        validateFilmExist(filmId, "Ошибка лайка: фильм с ID {} не найден");
-        validateUserExists(userId, "Ошибка лайка: пользователь с ID {} не найден");
+        validateService.validateFilmExist(filmId, "Ошибка лайка: фильм с ID {} не найден");
+        validateService.validateUserExists(userId, "Ошибка лайка: пользователь с ID {} не найден");
 
         if (likesStorage.existsLike(filmId, userId)) {
             log.warn("Ошибка: пользователь {} уже лайкнул фильм {}", userId, filmId);
@@ -88,12 +88,13 @@ public class FilmService {
                 EventOperation.ADD,
                 filmId
         );
+
         log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
     }
 
     public void removeLike(Long filmId, Long userId) {
-        validateFilmExist(filmId, "Ошибка удаления лайка: фильм с ID {} не найден");
-        validateUserExists(userId, "Ошибка удаления лайка: пользователь с ID {} не найден");
+        validateService.validateFilmExist(filmId, "Ошибка удаления лайка: фильм с ID {} не найден");
+        validateService.validateUserExists(userId, "Ошибка удаления лайка: пользователь с ID {} не найден");
 
         if (!likesStorage.existsLike(filmId, userId)) {
             log.warn("Ошибка: пользователь {} не лайкал фильм {}", userId, filmId);
@@ -108,6 +109,7 @@ public class FilmService {
                 EventOperation.REMOVE,
                 filmId
         );
+
         log.info("Пользователь {} убрал лайк с фильма {}", userId, filmId);
     }
 
@@ -127,20 +129,10 @@ public class FilmService {
                 });
     }
 
-
-    private void validateFilmExist(Long filmId, String logMessage) {
-        if (!filmStorage.existsById(filmId)) {
-            log.warn(logMessage, filmId);
-            throw new NotFoundException("Фильм с ID " + filmId + " не найден");
-        }
-    }
-
-
-    private void validateUserExists(Long userId, String logMessage) {
-        if (userService.findUserById(userId) == null) {
-            log.warn(logMessage, userId);
-            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
-        }
+    public Collection<Film> findCommonFilms(Long userId, Long friendId) {
+        validateService.validateUserExists(userId, "Ошибка вывода: пользователь с ID {} не найден");
+        validateService.validateUserExists(friendId, "Ошибка вывода: друг с ID {} не найден");
+        return likesStorage.findCommonFilms(userId, friendId);
     }
 
 
