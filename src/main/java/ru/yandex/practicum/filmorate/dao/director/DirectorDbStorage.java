@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class DirectorDbStorage implements DirectorStorage{
+public class DirectorDbStorage implements DirectorStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final DirectorRowMapper directorRowMapper;
@@ -31,7 +31,6 @@ public class DirectorDbStorage implements DirectorStorage{
         String sql = "SELECT * FROM directors";
         return jdbcTemplate.query(sql, directorRowMapper);
     }
-
 
 
     @Override
@@ -91,7 +90,7 @@ public class DirectorDbStorage implements DirectorStorage{
 
     @Override
     public List<Director> findById(List<Long> id) {
-        if(id == null || id.isEmpty()){
+        if (id == null || id.isEmpty()) {
             return Collections.emptyList();
         }
 

@@ -17,16 +17,16 @@ public class DirectorService {
 
     private final DirectorStorage directorStorage;
 
-    public Collection<Director> findAll(){
+    public Collection<Director> findAll() {
         return directorStorage.findAll();
     }
 
-    public Director findById(Long id){
+    public Director findById(Long id) {
         return directorStorage.findById(id)
                 .orElseThrow(() -> new NotFoundException("Режиссёр с id " + id + " не найден"));
     }
 
-    public Director create(Director director){
+    public Director create(Director director) {
 
         ValidationDirector.validateName(director);
 
@@ -36,7 +36,7 @@ public class DirectorService {
         return saved;
     }
 
-    public Director update(Director director){
+    public Director update(Director director) {
 
         ValidationDirector.validateId(director.getId());
         ValidationDirector.validateName(director);
@@ -45,9 +45,9 @@ public class DirectorService {
         return directorStorage.update(director);
     }
 
-    public void delete(Long id){
+    public void delete(Long id) {
         ValidationDirector.validateId(id);
-        ValidationDirector.validateExists(id,directorStorage.existsById(id));
+        ValidationDirector.validateExists(id, directorStorage.existsById(id));
         directorStorage.deleteById(id);
     }
 }

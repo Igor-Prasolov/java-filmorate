@@ -130,7 +130,7 @@ public class FilmsDbStorage implements FilmStorage {
         jdbcTemplate.update(deleteDirectorSql, film.getId());
 
 
-        if (film.getDirectors() != null && !film.getDirectors().isEmpty()){
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             saveDirector(film.getId(), film.getDirectors());
         }
 
@@ -173,12 +173,12 @@ public class FilmsDbStorage implements FilmStorage {
         film.setGenres(new LinkedHashSet<>(genreList));
 
         String directorSql = """
-        SELECT d.id, d.name
-        FROM directors d
-        JOIN film_directors fd ON d.id = fd.director_id
-        WHERE fd.film_id = ?
-        ORDER BY d.id
-        """;
+                SELECT d.id, d.name
+                FROM directors d
+                JOIN film_directors fd ON d.id = fd.director_id
+                WHERE fd.film_id = ?
+                ORDER BY d.id
+                """;
         List<Director> directorList = jdbcTemplate.query(directorSql, directorRowMapper, film.getId());
         film.setDirectors(new LinkedHashSet<>(directorList));
 

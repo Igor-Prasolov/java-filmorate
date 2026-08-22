@@ -92,14 +92,14 @@ public class LikesDbStorage implements LikesStorage {
         }
 
         String sql = """
-            SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id,
-                   COUNT(l.user_id) as likes_count
-            FROM films f
-            JOIN film_directors fd ON f.id = fd.film_id
-            LEFT JOIN likes l ON f.id = l.film_id
-            WHERE fd.director_id = ?
-            GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
-            """ + orderBy;
+                SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id,
+                       COUNT(l.user_id) as likes_count
+                FROM films f
+                JOIN film_directors fd ON f.id = fd.film_id
+                LEFT JOIN likes l ON f.id = l.film_id
+                WHERE fd.director_id = ?
+                GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
+                """ + orderBy;
 
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper, directorId);
 

@@ -184,8 +184,8 @@ public class FilmService {
         }
     }
 
-    private void validateDirectorsExist(Film film){
-        if (film.getDirectors() == null || film.getDirectors().isEmpty()){
+    private void validateDirectorsExist(Film film) {
+        if (film.getDirectors() == null || film.getDirectors().isEmpty()) {
             return;
         }
         List<Long> directorId = film.getDirectors().stream()
@@ -194,7 +194,7 @@ public class FilmService {
 
         List<Director> existingDirector = directorStorage.findById(directorId);
 
-        if(existingDirector.size() != directorId.size()){
+        if (existingDirector.size() != directorId.size()) {
             log.warn("Some directors not found: expected {}, found {}",
                     directorId.size(), existingDirector.size());
             throw new NotFoundException("Режиссёры не найдены");
