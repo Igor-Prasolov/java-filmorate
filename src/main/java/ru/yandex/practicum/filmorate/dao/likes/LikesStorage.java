@@ -17,4 +17,6 @@ public interface LikesStorage {
     List<Film> findPopularFilm(int limit);
 
     List<Film> findCommonFilms(Long userId, Long friendId);
+
+    List<Film> findFilmsByDirectorSorted(Long directorId, String sortBy);
 }

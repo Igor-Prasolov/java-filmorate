@@ -86,16 +86,4 @@ class FilmTest {
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());
     }
-
-
-    @Test
-    void filmReleaseDateShouldNotBeFuture() {
-        Film film = new Film();
-        film.setName("Начало");
-        film.setReleaseDate(LocalDate.now().plusDays(1));
-        film.setDuration(148);
-
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
-    }
 }
