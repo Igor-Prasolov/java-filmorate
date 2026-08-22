@@ -3,11 +3,13 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.dao.film.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.dao.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.dao.likes.LikesStorage;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -20,22 +22,25 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class FilmService {
-    private final ValidateService validateService;
+    private final UserService userService;
     private final LikesStorage likesStorage;
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
     private final FilmStorage filmStorage;
+    private final DirectorStorage directorStorage;
 
     public FilmService(@Qualifier("filmsDbStorage") FilmStorage filmStorage,
+                       UserService userService,
                        LikesStorage likesStorage,
                        MpaStorage mpaStorage,
                        GenreStorage genreStorage,
-                       ValidateService validateService) {
+                       DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
+        this.userService = userService;
         this.likesStorage = likesStorage;
         this.mpaStorage = mpaStorage;
         this.genreStorage = genreStorage;
-        this.validateService = validateService;
+        this.directorStorage = directorStorage;
     }
 
 
@@ -48,6 +53,7 @@ public class FilmService {
         ValidationFilms.validReleaseDate(film.getReleaseDate());
         validateMpaExists(film, "Ошибка создания фильма: рейтинг с id {} не найден");
         validateGenresExist(film);
+        validateDirectorsExist(film);
         Film saved = filmStorage.save(film);
 
         log.info("Film created: name={}, id={}", saved.getName(), saved.getId());
@@ -59,16 +65,17 @@ public class FilmService {
             log.warn("Update failed: filmId is null");
             throw new ValidationException("Отсутствует id");
         }
-        validateService.validateFilmExist(film.getId(), "Ошибка обновления фильма: фильм с ID {} не найден");
+        validateFilmExist(film.getId(), "Ошибка обновления фильма: фильм с ID {} не найден");
         ValidationFilms.validReleaseDate(film.getReleaseDate());
         validateMpaExists(film, "Ошибка обновления фильма: рейтинг с ID {} не найден");
         validateGenresExist(film);
+        validateDirectorsExist(film);
         return filmStorage.update(film);
     }
 
     public void addLike(Long filmId, Long userId) {
-        validateService.validateFilmExist(filmId, "Ошибка лайка: фильм с ID {} не найден");
-        validateService.validateUserExists(userId, "Ошибка лайка: пользователь с ID {} не найден");
+        validateFilmExist(filmId, "Ошибка лайка: фильм с ID {} не найден");
+        validateUserExists(userId, "Ошибка лайка: пользователь с ID {} не найден");
 
         if (likesStorage.existsLike(filmId, userId)) {
             log.warn("Ошибка: пользователь {} уже лайкнул фильм {}", userId, filmId);
@@ -80,8 +87,8 @@ public class FilmService {
     }
 
     public void removeLike(Long filmId, Long userId) {
-        validateService.validateFilmExist(filmId, "Ошибка удаления лайка: фильм с ID {} не найден");
-        validateService.validateUserExists(userId, "Ошибка удаления лайка: пользователь с ID {} не найден");
+        validateFilmExist(filmId, "Ошибка удаления лайка: фильм с ID {} не найден");
+        validateUserExists(userId, "Ошибка удаления лайка: пользователь с ID {} не найден");
 
         if (!likesStorage.existsLike(filmId, userId)) {
             log.warn("Ошибка: пользователь {} не лайкал фильм {}", userId, filmId);
@@ -109,9 +116,40 @@ public class FilmService {
     }
 
     public Collection<Film> findCommonFilms(Long userId, Long friendId) {
-        validateService.validateUserExists(userId, "Ошибка вывода: пользователь с ID {} не найден");
-        validateService.validateUserExists(friendId, "Ошибка вывода: друг с ID {} не найден");
+        validateUserExists(userId, "Ошибка вывода: пользователь с ID {} не найден");
+        validateUserExists(friendId, "Ошибка вывода: друг с ID {} не найден");
         return likesStorage.findCommonFilms(userId, friendId);
+    }
+
+    public Collection<Film> findFilmsByDirector(Long directorId, String sortBy) {
+        // Проверяем, что режиссёр существует
+        if (!directorStorage.existsById(directorId)) {
+            throw new NotFoundException("Режиссёр с ID " + directorId + " не найден");
+        }
+
+        // Проверяем, что sortBy корректный
+        if (!"likes".equals(sortBy) && !"year".equals(sortBy)) {
+            throw new ValidationException("Параметр sortBy должен быть 'likes' или 'year'");
+        }
+
+        log.info("Поиск фильмов режиссёра id={}, сортировка={}", directorId, sortBy);
+        return likesStorage.findFilmsByDirectorSorted(directorId, sortBy);
+    }
+
+
+    private void validateFilmExist(Long filmId, String logMessage) {
+        if (!filmStorage.existsById(filmId)) {
+            log.warn(logMessage, filmId);
+            throw new NotFoundException("Фильм с ID " + filmId + " не найден");
+        }
+    }
+
+
+    private void validateUserExists(Long userId, String logMessage) {
+        if (userService.findUserById(userId) == null) {
+            log.warn(logMessage, userId);
+            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
+        }
     }
 
 
@@ -144,6 +182,25 @@ public class FilmService {
                     genreId.size(), existingGenre.size());
             throw new NotFoundException("Жанры не найдены");
         }
+    }
+
+    private void validateDirectorsExist(Film film){
+        if (film.getDirectors() == null || film.getDirectors().isEmpty()){
+            return;
+        }
+        List<Long> directorId = film.getDirectors().stream()
+                .map(Director::getId)
+                .collect(Collectors.toList());
+
+        List<Director> existingDirector = directorStorage.findById(directorId);
+
+        if(existingDirector.size() != directorId.size()){
+            log.warn("Some directors not found: expected {}, found {}",
+                    directorId.size(), existingDirector.size());
+            throw new NotFoundException("Режиссёры не найдены");
+        }
+
+
     }
 
 }

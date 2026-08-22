@@ -8,12 +8,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.mappers.MpaRowMapper;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
+
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -29,11 +32,16 @@ public class FilmsDbStorage implements FilmStorage {
     private final FilmRowMapper filmRowMapper;
     private final MpaRowMapper mpaRowMapper;
     private final GenreRowMapper genreRowMapper;
+    private final DirectorRowMapper directorRowMapper;
 
     @Override
     public Collection<Film> findAll() {
         String sql = "SELECT * FROM films";
-        return jdbcTemplate.query(sql, filmRowMapper);
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
+        for (Film film : films) {
+            loadFilmMpaAndGenres(film);
+        }
+        return films;
     }
 
     @Override
@@ -58,9 +66,18 @@ public class FilmsDbStorage implements FilmStorage {
         jdbcTemplate.batchUpdate(sql, batchArgs);
     }
 
+    private void saveDirector(Long filmId, Set<Director> directors) {
+        String sql = "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)";
+        List<Object[]> batchArgs = new ArrayList<>();
+        for (Director director : directors) {
+            batchArgs.add(new Object[]{filmId, director.getId()});
+        }
+        jdbcTemplate.batchUpdate(sql, batchArgs);
+    }
+
     @Override
     public Film save(Film film) {
-        String sql = "INSERT INTO films (name, description, release_date, duration, mpa_id) VALUES (?, ?, ?, ?, ?) ";
+        String sql = "INSERT INTO films (name, description, release_date, duration, mpa_id) VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
@@ -80,6 +97,9 @@ public class FilmsDbStorage implements FilmStorage {
             saveGenres(filmId, film.getGenres());
         }
 
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            saveDirector(filmId, film.getDirectors());
+        }
         return film;
     }
 
@@ -105,6 +125,15 @@ public class FilmsDbStorage implements FilmStorage {
 
         String deleteSql = "DELETE FROM film_genre WHERE film_id = ?";
         jdbcTemplate.update(deleteSql, film.getId());
+
+        String deleteDirectorSql = "DELETE FROM film_directors WHERE film_id = ?";
+        jdbcTemplate.update(deleteDirectorSql, film.getId());
+
+
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()){
+            saveDirector(film.getId(), film.getDirectors());
+        }
+
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             saveGenres(film.getId(), film.getGenres());
@@ -142,6 +171,16 @@ public class FilmsDbStorage implements FilmStorage {
                 """;
         List<Genre> genreList = jdbcTemplate.query(genreSql, genreRowMapper, film.getId());
         film.setGenres(new LinkedHashSet<>(genreList));
+
+        String directorSql = """
+        SELECT d.id, d.name
+        FROM directors d
+        JOIN film_directors fd ON d.id = fd.director_id
+        WHERE fd.film_id = ?
+        ORDER BY d.id
+        """;
+        List<Director> directorList = jdbcTemplate.query(directorSql, directorRowMapper, film.getId());
+        film.setDirectors(new LinkedHashSet<>(directorList));
 
     }
 

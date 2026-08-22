@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao.director;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface DirectorStorage {
@@ -11,12 +12,14 @@ public interface DirectorStorage {
 
     Optional<Director> findById(Long id);
 
-    Director create(Director director);
+    Director save(Director director);
 
     Director update(Director director);
 
-    void delete(Long id);
+    void deleteById(Long id);
 
-    boolean exists(Long id); // можно реализовать в интерфейсе для проверок на 404
+    boolean existsById(Long id);
+
+    List<Director> findById(List<Long> id);// можно реализовать в интерфейсе для проверок на 404
 
 }
