@@ -82,10 +82,7 @@ public class ReviewService {
         validateReviewIdNotNull(reviewId);
         validateReviewExists(reviewId, "Отзыв с id {} не найден при удалении");
 
-        Review review = reviewDbStorage.findById(reviewId)
-                .orElseThrow(() -> new NotFoundException(
-                        "Отзыв с id " + reviewId + " не найден"
-                ));
+        Review review = reviewDbStorage.findById(reviewId).get();
 
         reviewDbStorage.delete(reviewId);
 
@@ -102,11 +99,9 @@ public class ReviewService {
 
     public Review findById(Long reviewId) {
         validateReviewIdNotNull(reviewId);
+        validateReviewExists(reviewId, "Отзыв с id {} не найден при поиске по ID");
 
-        return reviewDbStorage.findById(reviewId)
-                .orElseThrow(() -> new NotFoundException(
-                        "Отзыв с id " + reviewId + " не найден"
-                ));
+        return reviewDbStorage.findById(reviewId).get();
     }
 
 
