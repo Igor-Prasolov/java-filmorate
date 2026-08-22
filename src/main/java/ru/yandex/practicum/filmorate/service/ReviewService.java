@@ -22,6 +22,13 @@ public class ReviewService {
 
 
     public Review create(Review review) {
+        if (review.getUserId() == null) {
+            throw new ValidationException("ID пользователя должен быть указан");
+        }
+        if (review.getFilmId() == null) {
+            throw new ValidationException("ID фильма должен быть указан");
+        }
+
         validateService.validateUserExists(review.getUserId(),
                 "Пользователь с id {} не найден при создании отзыва");
         validateService.validateFilmExist(review.getFilmId(),
