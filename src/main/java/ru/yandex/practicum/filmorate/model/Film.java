@@ -18,7 +18,6 @@ public class Film {
     private String description;
 
     @NotNull(message = "Дата релиза не указана")
-    @PastOrPresent(message = "Дата релиза некорректна")
     private LocalDate releaseDate;
 
     @NotNull(message = "Продолжительность фильма не указана")
