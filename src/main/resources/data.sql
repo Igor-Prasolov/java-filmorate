@@ -1,10 +1,3 @@
--- Режиссёры
-INSERT INTO directors (id, name)
-VALUES (1, 'Кристофер Нолан'),
-       (2, 'Джеймс Кэмерон'),
-       (3, 'Гай Ричи')
-ON CONFLICT DO NOTHING;
-
 -- MPA
 INSERT INTO mpa (id, name)
 VALUES (1, 'G'),
