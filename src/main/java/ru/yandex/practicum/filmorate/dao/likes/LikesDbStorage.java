@@ -86,7 +86,7 @@ public class LikesDbStorage implements LikesStorage {
         if ("likes".equals(sortBy)) {
             orderBy = "ORDER BY likes_count DESC";
         } else if ("year".equals(sortBy)) {
-            orderBy = "ORDER BY f.release_date DESC";
+            orderBy = "ORDER BY f.release_date ASC";
         } else {
             throw new ValidationException("Некорректный параметр sortBy. Используйте 'likes' или 'year'");
         }
