@@ -47,6 +47,16 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Director save(Director director) {
+
+        String checkSql = "SELECT COUNT(*) FROM directors WHERE name = ?";
+        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, director.getName());
+
+        if (count != null && count > 0) {
+
+            String findSql = "SELECT * FROM directors WHERE name = ?";
+            return jdbcTemplate.queryForObject(findSql, directorRowMapper, director.getName());
+        }
+
         String sql = "INSERT INTO directors (name) VALUES (?) ";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 

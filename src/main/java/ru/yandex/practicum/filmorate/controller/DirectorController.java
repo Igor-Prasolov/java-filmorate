@@ -17,7 +17,7 @@ public class DirectorController {
 
     private final DirectorService directorService;
 
-    @GetMapping
+    @GetMapping({"/", ""})
     public Collection<Director> findAll() {
         log.info("Запрос на получение всех режиссёров");
         return directorService.findAll();
