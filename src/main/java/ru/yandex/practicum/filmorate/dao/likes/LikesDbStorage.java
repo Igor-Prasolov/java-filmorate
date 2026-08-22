@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.film.FilmsDbStorage;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -76,6 +77,37 @@ public class LikesDbStorage implements LikesStorage {
                 """;
 
         return jdbcTemplate.query(sql, filmRowMapper, limit);
+    }
+
+    @Override
+    public List<Film> findFilmsByDirectorSorted(Long directorId, String sortBy) {
+        String orderBy = "";
+
+        if ("likes".equals(sortBy)) {
+            orderBy = "ORDER BY likes_count DESC";
+        } else if ("year".equals(sortBy)) {
+            orderBy = "ORDER BY f.release_date DESC";
+        } else {
+            throw new ValidationException("Некорректный параметр sortBy. Используйте 'likes' или 'year'");
+        }
+
+        String sql = """
+            SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id,
+                   COUNT(l.user_id) as likes_count
+            FROM films f
+            JOIN film_directors fd ON f.id = fd.film_id
+            LEFT JOIN likes l ON f.id = l.film_id
+            WHERE fd.director_id = ?
+            GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
+            """ + orderBy;
+
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, directorId);
+
+        for (Film film : films) {
+            filmsDbStorage.loadFilmMpaAndGenres(film);
+        }
+
+        return films;
     }
 
 }
