@@ -8,6 +8,8 @@ import ru.yandex.practicum.filmorate.dao.reviewLike.ReviewLikeStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.feed.EventOperation;
+import ru.yandex.practicum.filmorate.model.feed.EventType;
 
 import java.util.Collection;
 
@@ -19,6 +21,7 @@ public class ReviewService {
     private final ReviewDbStorage reviewDbStorage;
     private final ValidateService validateService;
     private final ReviewLikeStorage reviewLikeStorage;
+    private final FeedService feedService;
 
 
     public Review create(Review review) {
@@ -37,6 +40,13 @@ public class ReviewService {
         review.setUseful(0);
         Review saved = reviewDbStorage.create(review);
 
+        feedService.addEvent(
+                saved.getUserId(),
+                EventType.REVIEW,
+                EventOperation.ADD,
+                saved.getReviewId()
+        );
+
         log.info("Пользователь с id {} написал отзыв с id {} на фильм с id {}",
                 saved.getUserId(), saved.getReviewId(), saved.getFilmId());
         return saved;
@@ -54,6 +64,14 @@ public class ReviewService {
                 "Отзыв с id {} не найден при обновлении");
 
         Review update = reviewDbStorage.update(review);
+
+        feedService.addEvent(
+                update.getUserId(),
+                EventType.REVIEW,
+                EventOperation.UPDATE,
+                update.getReviewId()
+        );
+
         log.info("Отзыв с id {} обновлен", update.getReviewId());
 
         return update;
@@ -64,7 +82,17 @@ public class ReviewService {
         validateReviewIdNotNull(reviewId);
         validateReviewExists(reviewId, "Отзыв с id {} не найден при удалении");
 
+        Review review = reviewDbStorage.findById(reviewId).get();
+
         reviewDbStorage.delete(reviewId);
+
+        feedService.addEvent(
+                review.getUserId(),
+                EventType.REVIEW,
+                EventOperation.REMOVE,
+                reviewId
+        );
+
         log.info("Отзыв с id {} удален", reviewId);
     }
 

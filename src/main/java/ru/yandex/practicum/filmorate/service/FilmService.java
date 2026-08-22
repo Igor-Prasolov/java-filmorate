@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.dao.film.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.dao.likes.LikesStorage;
 import ru.yandex.practicum.filmorate.dao.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -13,9 +14,12 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.dao.likes.LikesStorage;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.feed.EventOperation;
+import ru.yandex.practicum.filmorate.model.feed.EventType;
 import ru.yandex.practicum.filmorate.validation.Film.ValidationFilms;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -27,19 +31,25 @@ public class FilmService {
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
     private final FilmStorage filmStorage;
+    private final FeedService feedService;
     private final DirectorStorage directorStorage;
+    private final ValidateService validateService;  // ← ДОБАВИТЬ!
 
     public FilmService(@Qualifier("filmsDbStorage") FilmStorage filmStorage,
                        UserService userService,
                        LikesStorage likesStorage,
                        MpaStorage mpaStorage,
                        GenreStorage genreStorage,
-                       DirectorStorage directorStorage) {
+                       ValidateService validateService,
+                       FeedService feedService,
+                       DirectorStorage directorStorage) {  // ← ВСЕ ПАРАМЕТРЫ ВНУТРИ
         this.filmStorage = filmStorage;
         this.userService = userService;
         this.likesStorage = likesStorage;
         this.mpaStorage = mpaStorage;
         this.genreStorage = genreStorage;
+        this.validateService = validateService;
+        this.feedService = feedService;
         this.directorStorage = directorStorage;
     }
 
@@ -83,6 +93,14 @@ public class FilmService {
         }
 
         likesStorage.addLike(filmId, userId);
+
+        feedService.addEvent(
+                userId,
+                EventType.LIKE,
+                EventOperation.ADD,
+                filmId
+        );
+
         log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
     }
 
@@ -96,6 +114,14 @@ public class FilmService {
         }
 
         likesStorage.removeLike(filmId, userId);
+
+        feedService.addEvent(
+                userId,
+                EventType.LIKE,
+                EventOperation.REMOVE,
+                filmId
+        );
+
         log.info("Пользователь {} убрал лайк с фильма {}", userId, filmId);
     }
 

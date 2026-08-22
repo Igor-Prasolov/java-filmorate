@@ -8,8 +8,8 @@ import ru.yandex.practicum.filmorate.dao.user.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-
-
+import ru.yandex.practicum.filmorate.model.feed.EventOperation;
+import ru.yandex.practicum.filmorate.model.feed.EventType;
 import ru.yandex.practicum.filmorate.validation.User.ValidationUser;
 
 import java.util.*;
@@ -21,6 +21,7 @@ public class UserService {
     private final UserStorage userStorage;
     private final FriendshipStorage friendshipStorage;
     private final ValidateService validateService;
+    private final FeedService feedService;
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -64,6 +65,14 @@ public class UserService {
             throw new ValidationException("Нельзя добавить себя в друзья");
         }
         friendshipStorage.addFriend(userId, friendId);
+
+        feedService.addEvent(
+                userId,
+                EventType.FRIEND,
+                EventOperation.ADD,
+                friendId
+        );
+
         log.info("Friend added: userId={}, friendId={}", userId, friendId);
     }
 
@@ -74,6 +83,13 @@ public class UserService {
         validateService.validateUserExists(userId, "remove friend");
         validateService.validateUserExists(friendId, "remove friend");
         friendshipStorage.removeFriend(userId, friendId);
+
+        feedService.addEvent(
+                userId,
+                EventType.FRIEND,
+                EventOperation.REMOVE,
+                friendId
+        );
 
         log.info("Friend removed: userId={}, friendId={}", userId, friendId);
     }
