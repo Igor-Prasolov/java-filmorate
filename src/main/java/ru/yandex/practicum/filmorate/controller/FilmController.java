@@ -41,7 +41,14 @@ public class FilmController {
         log.info("Запрос на получение общих фильмов");
         return filmService.findCommonFilms(userId, friendId);
     }
-    // @GetMapping("/director/{directorId}?sortBy=[year,likes]") реализовать, см., в канбан-доске добавление режжисера
+
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getFilmsByDirector(
+            @PathVariable Long directorId,
+            @RequestParam String sortBy) {
+        log.info("Запрос на получение фильмов режиссёра id={}, сортировка={}", directorId, sortBy);
+        return filmService.findFilmsByDirector(directorId, sortBy);
+    }
 
     @PostMapping
     public Film createNewFilm(@Valid @RequestBody Film film) {
