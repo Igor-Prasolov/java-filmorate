@@ -162,6 +162,11 @@ public class FilmService {
         return likesStorage.findFilmsByDirectorSorted(directorId, sortBy);
     }
 
+    public void deleteFilmById(Long id) {
+        validateService.validateFilmExist(id, "Фильм с id {} при удалении пользователя не найден");
+        filmStorage.deleteById(id);
+    }
+
 
     private void validateFilmExist(Long filmId, String logMessage) {
         if (!filmStorage.existsById(filmId)) {

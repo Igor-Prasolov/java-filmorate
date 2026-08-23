@@ -94,6 +94,11 @@ public class UserService {
         log.info("Friend removed: userId={}, friendId={}", userId, friendId);
     }
 
+    public void removeUserById(Long userId) {
+        validateService.validateUserExists(userId, "Пользователь c id {} при удалении по id не найден");
+        userStorage.deleteById(userId);
+    }
+
     public Collection<User> findFriends(Long userId) {
         validateService.validateUserExists(userId, "find friends");
 
