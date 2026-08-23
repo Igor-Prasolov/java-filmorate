@@ -23,22 +23,9 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
         film.setMpaId(rs.getLong("mpa_id"));
+        film.setMpa(null);
+        film.setGenres(new LinkedHashSet<>());
 
-        MPA mpa = new MPA();
-        mpa.setId(rs.getLong("mpa_id"));
-        mpa.setName(rs.getString("mpa_name"));
-        film.setMpa(mpa);
-
-        Genre genre = new Genre();
-        genre.setId(rs.getLong("genre_id"));
-        genre.setName(rs.getString("genre_name"));
-        if (film.getGenres() == null) {
-            film.setGenres(new LinkedHashSet<>());
-        }
-
-        if (genre.getId() != 0) {
-            film.getGenres().add(genre);
-        }
         return film;
     }
 }
