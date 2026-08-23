@@ -37,8 +37,8 @@ public class FilmsDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findAll() {
         String sql = """
-                SELECT f.*, 
-                       g.id AS genre_id, g.name AS genre_name, 
+                SELECT f.*,
+                       g.id AS genre_id, g.name AS genre_name,
                        m.id AS mpa_id, m.name AS mpa_name
                 FROM films f
                 LEFT JOIN film_genre fg ON f.id = fg.film_id
