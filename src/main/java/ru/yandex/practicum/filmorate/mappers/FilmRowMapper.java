@@ -35,7 +35,7 @@ public class FilmRowMapper implements RowMapper<Film> {
         if (film.getGenres() == null) {
             film.setGenres(new LinkedHashSet<>());
         }
-        // Если genre_id не null (LEFT JOIN вернул null, если жанров нет)
+
         if (genre.getId() != 0) {
             film.getGenres().add(genre);
         }
