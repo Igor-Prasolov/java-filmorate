@@ -66,6 +66,80 @@ public class LikesDbStorage implements LikesStorage {
     }
 
     @Override
+    public List<Film> searchFilms(String query, String by) {
+        String searchPattern = "%" + query.toLowerCase() + "%";
+        String sql;
+        List<Film> films;
+
+        if ("title".equals(by)) {
+            sql = """
+                    SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id,
+                           m.id as mpa_id, m.name as mpa_name,
+                           g.id as genre_id, g.name as genre_name,
+                           d.id as director_id, d.name as director_name,
+                           COUNT(l.user_id) as likes_count
+                    FROM films f
+                    LEFT JOIN mpa m ON f.mpa_id = m.id
+                    LEFT JOIN film_genre fg ON f.id = fg.film_id
+                    LEFT JOIN genres g ON fg.genre_id = g.id
+                    LEFT JOIN film_directors fd ON f.id = fd.film_id
+                    LEFT JOIN directors d ON fd.director_id = d.id
+                    LEFT JOIN likes l ON f.id = l.film_id
+                    WHERE LOWER(f.name) LIKE ?
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, 
+                             m.id, m.name, g.id, g.name, d.id, d.name
+                    ORDER BY likes_count DESC
+                    """;
+            films = jdbcTemplate.query(sql, filmRowMapper, searchPattern);
+
+        } else if ("director".equals(by)) {
+            sql = """
+                    SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id,
+                           m.id as mpa_id, m.name as mpa_name,
+                           g.id as genre_id, g.name as genre_name,
+                           d.id as director_id, d.name as director_name,
+                           COUNT(l.user_id) as likes_count
+                    FROM films f
+                    JOIN film_directors fd ON f.id = fd.film_id
+                    JOIN directors d ON fd.director_id = d.id
+                    LEFT JOIN mpa m ON f.mpa_id = m.id
+                    LEFT JOIN film_genre fg ON f.id = fg.film_id
+                    LEFT JOIN genres g ON fg.genre_id = g.id
+                    LEFT JOIN likes l ON f.id = l.film_id
+                    WHERE LOWER(d.name) LIKE ?
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, 
+                             m.id, m.name, g.id, g.name, d.id, d.name
+                    ORDER BY likes_count DESC
+                    """;
+            films = jdbcTemplate.query(sql, filmRowMapper, searchPattern);
+
+        } else {
+            sql = """
+                    SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id,
+                           m.id as mpa_id, m.name as mpa_name,
+                           g.id as genre_id, g.name as genre_name,
+                           d.id as director_id, d.name as director_name,
+                           COUNT(l.user_id) as likes_count
+                    FROM films f
+                    LEFT JOIN mpa m ON f.mpa_id = m.id
+                    LEFT JOIN film_genre fg ON f.id = fg.film_id
+                    LEFT JOIN genres g ON fg.genre_id = g.id
+                    LEFT JOIN film_directors fd ON f.id = fd.film_id
+                    LEFT JOIN directors d ON fd.director_id = d.id
+                    LEFT JOIN likes l ON f.id = l.film_id
+                    WHERE LOWER(f.name) LIKE ?
+                       OR LOWER(d.name) LIKE ?
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, 
+                             m.id, m.name, g.id, g.name, d.id, d.name
+                    ORDER BY likes_count DESC
+                    """;
+            films = jdbcTemplate.query(sql, filmRowMapper, searchPattern, searchPattern);
+        }
+
+        return films;
+    }
+
+    @Override
     public List<Film> findPopularFilm(int limit) {
         String sql = """
                 SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id

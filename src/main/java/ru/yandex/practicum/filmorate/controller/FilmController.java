@@ -50,6 +50,14 @@ public class FilmController {
         return filmService.findFilmsByDirector(directorId, sortBy);
     }
 
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(
+            @RequestParam String query,
+            @RequestParam String by) {
+        log.info("Запрос на поиск фильмов: query={}, by={}", query, by);
+        return filmService.searchFilms(query, by);
+    }
+
     @PostMapping
     public Film createNewFilm(@Valid @RequestBody Film film) {
         log.info("Запрос на создание нового фильма");
