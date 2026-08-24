@@ -86,7 +86,7 @@ public class LikesDbStorage implements LikesStorage {
                     LEFT JOIN directors d ON fd.director_id = d.id
                     LEFT JOIN likes l ON f.id = l.film_id
                     WHERE LOWER(f.name) LIKE ?
-                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, 
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration,
                              m.id, m.name, g.id, g.name, d.id, d.name
                     ORDER BY likes_count DESC
                     """;
@@ -107,7 +107,7 @@ public class LikesDbStorage implements LikesStorage {
                     LEFT JOIN genres g ON fg.genre_id = g.id
                     LEFT JOIN likes l ON f.id = l.film_id
                     WHERE LOWER(d.name) LIKE ?
-                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, 
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration,
                              m.id, m.name, g.id, g.name, d.id, d.name
                     ORDER BY likes_count DESC
                     """;
@@ -129,7 +129,7 @@ public class LikesDbStorage implements LikesStorage {
                     LEFT JOIN likes l ON f.id = l.film_id
                     WHERE LOWER(f.name) LIKE ?
                        OR LOWER(d.name) LIKE ?
-                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, 
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration,
                              m.id, m.name, g.id, g.name, d.id, d.name
                     ORDER BY likes_count DESC
                     """;
