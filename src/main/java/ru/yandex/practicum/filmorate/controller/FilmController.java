@@ -24,10 +24,13 @@ public class FilmController {
         return filmService.findAll();
     }
 
+
     @GetMapping("/popular")
-    public Collection<Film> getPopularFilm(@RequestParam(required = false) Integer count) {
-        log.info("Запрос на получение популярных фильмов");
-        return filmService.findPopularFilms(count);
+    public Collection<Film> getMostPopularsFilm(@RequestParam(required = false) Integer count,
+                                                @RequestParam(required = false) Long genreId,
+                                                @RequestParam(required = false) Integer year) {
+        log.info("Запрос на получение популярных фильмов по трем параметрам");
+        return filmService.findPopularFilms(count, genreId, year);
     }
 
     @GetMapping("/{id}")

@@ -10,15 +10,13 @@ public interface LikesStorage {
 
     void removeLike(Long filmId, Long userId);
 
-    int getLikesCount(Long filmId);
-
     boolean existsLike(Long filmId, Long userId);
-
-    List<Film> findPopularFilm(int limit);
 
     List<Film> findCommonFilms(Long userId, Long friendId);
 
     List<Film> findFilmsByDirectorSorted(Long directorId, String sortBy);
 
     List<Film> findRecommendations(Long userId);
+
+    List<Film> findPopularFilm(int limit, Long genreId, Integer year);
 }

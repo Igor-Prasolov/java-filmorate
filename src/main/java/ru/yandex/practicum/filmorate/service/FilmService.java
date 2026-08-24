@@ -125,12 +125,20 @@ public class FilmService {
         log.info("Пользователь {} убрал лайк с фильма {}", userId, filmId);
     }
 
-    public Collection<Film> findPopularFilms(Integer count) {
+
+    public Collection<Film> findPopularFilms(Integer count, Long genreId, Integer year) {
         if (count == null || count <= 0) {
             count = 10;
         }
+        if (genreId != null) {
+            genreStorage.findById(genreId)
+                    .orElseThrow(() -> new NotFoundException("Жанр с ID " + genreId + " не найден"));
+        }
+        if (year != null && year < 1895) {
+            throw new ValidationException("Год не может быть меньше 1895");
+        }
 
-        return likesStorage.findPopularFilm(count);
+        return likesStorage.findPopularFilm(count, genreId, year);
     }
 
     public Film findById(Long id) {
