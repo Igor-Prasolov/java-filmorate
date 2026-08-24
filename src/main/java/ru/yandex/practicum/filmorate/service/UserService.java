@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.feed.EventOperation;
 import ru.yandex.practicum.filmorate.model.feed.EventType;
 import ru.yandex.practicum.filmorate.validation.User.ValidationUser;
+import ru.yandex.practicum.filmorate.dao.likes.LikesStorage;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
 
@@ -22,6 +24,7 @@ public class UserService {
     private final FriendshipStorage friendshipStorage;
     private final ValidateService validateService;
     private final FeedService feedService;
+    private final LikesStorage likesStorage;
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -125,6 +128,15 @@ public class UserService {
                     email, user.get().getId(), operation);
             throw new ValidationException("Этот Email уже используется");
         }
+    }
+
+    public Collection<Film> getRecommendations(Long userId) {
+        validateService.validateUserExists(
+                userId,
+                "Ошибка получения рекомендаций: пользователь с ID {} не найден"
+        );
+
+        return likesStorage.findRecommendations(userId);
     }
 
 }
