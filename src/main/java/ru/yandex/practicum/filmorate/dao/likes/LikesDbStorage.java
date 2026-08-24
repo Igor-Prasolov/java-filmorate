@@ -110,4 +110,49 @@ public class LikesDbStorage implements LikesStorage {
         return films;
     }
 
+    @Override
+    public List<Film> findRecommendations(Long userId) {
+        String sql = """
+            SELECT f.id,
+                   f.name,
+                   f.description,
+                   f.release_date,
+                   f.duration,
+                   f.mpa_id
+            FROM films f
+            JOIN likes l ON l.film_id = f.id
+            WHERE l.user_id = (
+                SELECT l2.user_id
+                FROM likes l1
+                JOIN likes l2 ON l1.film_id = l2.film_id
+                WHERE l1.user_id = ?
+                  AND l2.user_id <> ?
+                GROUP BY l2.user_id
+                ORDER BY COUNT(*) DESC, l2.user_id
+                LIMIT 1
+            )
+            AND NOT EXISTS (
+                SELECT 1
+                FROM likes user_likes
+                WHERE user_likes.user_id = ?
+                  AND user_likes.film_id = f.id
+            )
+            ORDER BY f.id
+            """;
+
+        List<Film> films = jdbcTemplate.query(
+                sql,
+                filmRowMapper,
+                userId,
+                userId,
+                userId
+        );
+
+        for (Film film : films) {
+            filmsDbStorage.loadFilmMpaAndGenres(film);
+        }
+
+        return films;
+    }
+
 }
