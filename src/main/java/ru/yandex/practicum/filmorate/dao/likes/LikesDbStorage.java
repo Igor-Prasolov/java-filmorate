@@ -74,20 +74,11 @@ public class LikesDbStorage implements LikesStorage {
         if ("title".equals(by)) {
             sql = """
                     SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id,
-                           m.id as mpa_id, m.name as mpa_name,
-                           g.id as genre_id, g.name as genre_name,
-                           d.id as director_id, d.name as director_name,
                            COUNT(l.user_id) as likes_count
                     FROM films f
-                    LEFT JOIN mpa m ON f.mpa_id = m.id
-                    LEFT JOIN film_genre fg ON f.id = fg.film_id
-                    LEFT JOIN genres g ON fg.genre_id = g.id
-                    LEFT JOIN film_directors fd ON f.id = fd.film_id
-                    LEFT JOIN directors d ON fd.director_id = d.id
                     LEFT JOIN likes l ON f.id = l.film_id
                     WHERE LOWER(f.name) LIKE ?
-                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration,
-                             m.id, m.name, g.id, g.name, d.id, d.name
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
                     ORDER BY likes_count DESC
                     """;
             films = jdbcTemplate.query(sql, filmRowMapper, searchPattern);
@@ -95,20 +86,13 @@ public class LikesDbStorage implements LikesStorage {
         } else if ("director".equals(by)) {
             sql = """
                     SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id,
-                           m.id as mpa_id, m.name as mpa_name,
-                           g.id as genre_id, g.name as genre_name,
-                           d.id as director_id, d.name as director_name,
                            COUNT(l.user_id) as likes_count
                     FROM films f
                     JOIN film_directors fd ON f.id = fd.film_id
                     JOIN directors d ON fd.director_id = d.id
-                    LEFT JOIN mpa m ON f.mpa_id = m.id
-                    LEFT JOIN film_genre fg ON f.id = fg.film_id
-                    LEFT JOIN genres g ON fg.genre_id = g.id
                     LEFT JOIN likes l ON f.id = l.film_id
                     WHERE LOWER(d.name) LIKE ?
-                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration,
-                             m.id, m.name, g.id, g.name, d.id, d.name
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
                     ORDER BY likes_count DESC
                     """;
             films = jdbcTemplate.query(sql, filmRowMapper, searchPattern);
@@ -116,25 +100,24 @@ public class LikesDbStorage implements LikesStorage {
         } else {
             sql = """
                     SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id,
-                           m.id as mpa_id, m.name as mpa_name,
-                           g.id as genre_id, g.name as genre_name,
-                           d.id as director_id, d.name as director_name,
                            COUNT(l.user_id) as likes_count
                     FROM films f
-                    LEFT JOIN mpa m ON f.mpa_id = m.id
-                    LEFT JOIN film_genre fg ON f.id = fg.film_id
-                    LEFT JOIN genres g ON fg.genre_id = g.id
                     LEFT JOIN film_directors fd ON f.id = fd.film_id
                     LEFT JOIN directors d ON fd.director_id = d.id
                     LEFT JOIN likes l ON f.id = l.film_id
                     WHERE LOWER(f.name) LIKE ?
                        OR LOWER(d.name) LIKE ?
-                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration,
-                             m.id, m.name, g.id, g.name, d.id, d.name
+                    GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
                     ORDER BY likes_count DESC
                     """;
             films = jdbcTemplate.query(sql, filmRowMapper, searchPattern, searchPattern);
         }
+
+        // Я не знаю как делать, чтобы проходило не через цикл
+        for (Film film : films) {
+            filmsDbStorage.loadFilmMpaAndGenres(film);
+        }
+
 
         return films;
     }
@@ -187,32 +170,32 @@ public class LikesDbStorage implements LikesStorage {
     @Override
     public List<Film> findRecommendations(Long userId) {
         String sql = """
-            SELECT f.id,
-                   f.name,
-                   f.description,
-                   f.release_date,
-                   f.duration,
-                   f.mpa_id
-            FROM films f
-            JOIN likes l ON l.film_id = f.id
-            WHERE l.user_id = (
-                SELECT l2.user_id
-                FROM likes l1
-                JOIN likes l2 ON l1.film_id = l2.film_id
-                WHERE l1.user_id = ?
-                  AND l2.user_id <> ?
-                GROUP BY l2.user_id
-                ORDER BY COUNT(*) DESC, l2.user_id
-                LIMIT 1
-            )
-            AND NOT EXISTS (
-                SELECT 1
-                FROM likes user_likes
-                WHERE user_likes.user_id = ?
-                  AND user_likes.film_id = f.id
-            )
-            ORDER BY f.id
-            """;
+                SELECT f.id,
+                       f.name,
+                       f.description,
+                       f.release_date,
+                       f.duration,
+                       f.mpa_id
+                FROM films f
+                JOIN likes l ON l.film_id = f.id
+                WHERE l.user_id = (
+                    SELECT l2.user_id
+                    FROM likes l1
+                    JOIN likes l2 ON l1.film_id = l2.film_id
+                    WHERE l1.user_id = ?
+                      AND l2.user_id <> ?
+                    GROUP BY l2.user_id
+                    ORDER BY COUNT(*) DESC, l2.user_id
+                    LIMIT 1
+                )
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM likes user_likes
+                    WHERE user_likes.user_id = ?
+                      AND user_likes.film_id = f.id
+                )
+                ORDER BY f.id
+                """;
 
         List<Film> films = jdbcTemplate.query(
                 sql,
