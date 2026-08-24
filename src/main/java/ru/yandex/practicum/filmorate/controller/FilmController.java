@@ -76,4 +76,11 @@ public class FilmController {
         filmService.removeLike(id, userId);
     }
 
+    @DeleteMapping("/{filmId}")
+    public void removeFilmById(@PathVariable Long filmId) {
+        log.info("Запрос на удаление фильма по id");
+        filmService.deleteFilmById(filmId);
+    }
+
+
 }

@@ -33,7 +33,7 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final FeedService feedService;
     private final DirectorStorage directorStorage;
-    private final ValidateService validateService;  // ← ДОБАВИТЬ!
+    private final ValidateService validateService;
 
     public FilmService(@Qualifier("filmsDbStorage") FilmStorage filmStorage,
                        UserService userService,
@@ -42,7 +42,7 @@ public class FilmService {
                        GenreStorage genreStorage,
                        ValidateService validateService,
                        FeedService feedService,
-                       DirectorStorage directorStorage) {  // ← ВСЕ ПАРАМЕТРЫ ВНУТРИ
+                       DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.userService = userService;
         this.likesStorage = likesStorage;
@@ -148,18 +148,22 @@ public class FilmService {
     }
 
     public Collection<Film> findFilmsByDirector(Long directorId, String sortBy) {
-        // Проверяем, что режиссёр существует
+
         if (!directorStorage.existsById(directorId)) {
             throw new NotFoundException("Режиссёр с ID " + directorId + " не найден");
         }
 
-        // Проверяем, что sortBy корректный
         if (!"likes".equals(sortBy) && !"year".equals(sortBy)) {
             throw new ValidationException("Параметр sortBy должен быть 'likes' или 'year'");
         }
 
         log.info("Поиск фильмов режиссёра id={}, сортировка={}", directorId, sortBy);
         return likesStorage.findFilmsByDirectorSorted(directorId, sortBy);
+    }
+
+    public void deleteFilmById(Long id) {
+        validateService.validateFilmExist(id, "Фильм с id {} при удалении пользователя не найден");
+        filmStorage.deleteById(id);
     }
 
 
