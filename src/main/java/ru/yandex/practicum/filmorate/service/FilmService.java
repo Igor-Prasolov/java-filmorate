@@ -124,6 +124,7 @@ public class FilmService {
         log.info("Пользователь {} убрал лайк с фильма {}", userId, filmId);
     }
 
+
     public Collection<Film> searchFilms(String query, String by) {
 
         if (query == null || query.isBlank()) {
