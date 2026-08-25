@@ -61,9 +61,14 @@ public class FilmsDbStorage implements FilmStorage {
     }
 
     private void saveGenres(Long filmId, Set<Genre> genres) {
+        if (genres == null || genres.isEmpty()) {
+            return;
+        }
         String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-        List<Genre> genreList = new ArrayList<>(genres);
+
+        List<Genre> genreList = new ArrayList<>(new LinkedHashSet<>(genres));
         genreList.sort(Comparator.comparing(Genre::getId));
+
         List<Object[]> batchArgs = new ArrayList<>();
         for (Genre genre : genreList) {
             batchArgs.add(new Object[]{filmId, genre.getId()});
@@ -135,13 +140,13 @@ public class FilmsDbStorage implements FilmStorage {
         jdbcTemplate.update(deleteDirectorSql, film.getId());
 
 
-        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-            saveDirector(film.getId(), film.getDirectors());
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            Set<Genre> uniqueGenres = new LinkedHashSet<>(film.getGenres());
+            saveGenres(film.getId(), uniqueGenres);
         }
 
-
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            saveGenres(film.getId(), film.getGenres());
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            saveDirector(film.getId(), film.getDirectors());
         }
 
         return film;
