@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -52,11 +53,7 @@ public class LikesDbStorage implements LikesStorage {
         jdbcTemplate.update(sql, filmdId, userId);
     }
 
-    @Override
-    public int getLikesCount(Long filmId) {
-        String sql = "SELECT COUNT(*) FROM likes WHERE film_id = ?";
-        return jdbcTemplate.queryForObject(sql, Integer.class, filmId);
-    }
+
 
     @Override
     public boolean existsLike(Long filmId, Long userId) {
@@ -113,7 +110,6 @@ public class LikesDbStorage implements LikesStorage {
             films = jdbcTemplate.query(sql, filmRowMapper, searchPattern, searchPattern);
         }
 
-        // Я не знаю как делать, чтобы проходило не через цикл
         for (Film film : films) {
             filmsDbStorage.loadFilmMpaAndGenres(film);
         }
@@ -123,17 +119,45 @@ public class LikesDbStorage implements LikesStorage {
     }
 
     @Override
-    public List<Film> findPopularFilm(int limit) {
-        String sql = """
+    public List<Film> findPopularFilm(int limit, Long genreId, Integer year) {
+        StringBuilder sql = new StringBuilder("""
                 SELECT f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
-                FROM films f
-                LEFT JOIN likes l ON f.id = l.film_id
-                GROUP BY f.id
+                FROM films AS f
+                LEFT JOIN likes AS l ON f.id = l.film_id
+                """);
+
+        if (genreId != null) {
+            sql.append("JOIN film_genre AS fg ON f.id = fg.film_id ");
+        }
+        sql.append("WHERE 1=1");
+
+        if (genreId != null) {
+            sql.append("AND fg.genre_id = ?");
+        }
+        if (year != null) {
+            sql.append("AND EXTRACT(YEAR FROM f.release_date) = ?");
+        }
+        sql.append("""
+                GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
                 ORDER BY COUNT(l.user_id) DESC
                 LIMIT ?
-                """;
+                """);
 
-        return jdbcTemplate.query(sql, filmRowMapper, limit);
+        List<Object> params = new ArrayList<>();
+        if (genreId != null) {
+            params.add(genreId);
+        }
+        if (year != null) {
+            params.add(year);
+        }
+        params.add(limit);
+
+        List<Film> filmList = jdbcTemplate.query(sql.toString(), filmRowMapper, params.toArray());
+        for (Film film : filmList) {
+            filmsDbStorage.loadFilmMpaAndGenres(film);
+        }
+        return filmList;
+
     }
 
     @Override

@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dao.likes.LikesStorage;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.feed.EventOperation;
 import ru.yandex.practicum.filmorate.model.feed.EventType;
@@ -124,6 +125,22 @@ public class FilmService {
         log.info("Пользователь {} убрал лайк с фильма {}", userId, filmId);
     }
 
+
+    public Collection<Film> findPopularFilms(Integer count, Long genreId, Integer year) {
+        if (count == null || count <= 0) {
+            count = 10;
+        }
+        if (genreId != null) {
+            genreStorage.findById(genreId)
+                    .orElseThrow(() -> new NotFoundException("Жанр с ID " + genreId + " не найден"));
+        }
+        if (year != null && year < 1895) {
+            throw new ValidationException("Год не может быть меньше 1895");
+        }
+
+        return likesStorage.findPopularFilm(count, genreId, year);
+    }
+
     public Collection<Film> searchFilms(String query, String by) {
 
         if (query == null || query.isBlank()) {
@@ -176,14 +193,6 @@ public class FilmService {
 
         log.info("Поиск фильмов: query={}, by={}, normalizedBy={}", query, by, normalizedBy);
         return likesStorage.searchFilms(query, normalizedBy);
-    }
-
-    public Collection<Film> findPopularFilms(Integer count) {
-        if (count == null || count <= 0) {
-            count = 10;
-        }
-
-        return likesStorage.findPopularFilm(count);
     }
 
     public Film findById(Long id) {
