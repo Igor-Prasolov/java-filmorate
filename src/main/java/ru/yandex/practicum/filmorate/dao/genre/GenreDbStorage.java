@@ -47,7 +47,7 @@ public class GenreDbStorage implements GenreStorage {
 
         String sql = "SELECT * FROM genres WHERE id IN (" +
                 id.stream().map(String::valueOf).collect(Collectors.joining(",")) +
-                ")";
+                ") ORDER BY id";
 
         return jdbcTemplate.query(sql, genreRowMapper);
     }

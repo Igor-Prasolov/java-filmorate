@@ -149,7 +149,7 @@ public class FilmsDbStorage implements FilmStorage {
             saveDirector(film.getId(), film.getDirectors());
         }
 
-        return film;
+        return findById(film.getId()).orElseThrow();
     }
 
     @Override
