@@ -36,24 +36,15 @@ public class FilmsDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findAll() {
-        String sql = """
-                SELECT f.*,
-                       g.id AS genre_id, g.name AS genre_name,
-                       m.id AS mpa_id, m.name AS mpa_name
-                FROM films f
-                LEFT JOIN film_genre fg ON f.id = fg.film_id
-                LEFT JOIN genres g ON g.id = fg.genre_id
-                LEFT JOIN mpa m ON f.mpa_id = m.id
-                """;
+        String sql = "SELECT * FROM films";
 
         List<Film> filmList = jdbcTemplate.query(sql, filmRowMapper);
 
-        Map<Long, Film> filmMap = new LinkedHashMap<>();
         for (Film film : filmList) {
-            filmMap.putIfAbsent(film.getId(), film);
+            loadFilmMpaAndGenres(film);
         }
 
-        return filmMap.values();
+        return filmList;
     }
 
     @Override
@@ -71,8 +62,10 @@ public class FilmsDbStorage implements FilmStorage {
 
     private void saveGenres(Long filmId, Set<Genre> genres) {
         String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+        List<Genre> genreList = new ArrayList<>(genres);
+        genreList.sort(Comparator.comparing(Genre::getId));
         List<Object[]> batchArgs = new ArrayList<>();
-        for (Genre genre : genres) {
+        for (Genre genre : genreList) {
             batchArgs.add(new Object[]{filmId, genre.getId()});
         }
         jdbcTemplate.batchUpdate(sql, batchArgs);
