@@ -40,13 +40,6 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public boolean existsById(Long id) {
-        String sql = "SELECT COUNT(*) FROM genres WHERE id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
-        return count != null && count > 0;
-    }
-
-    @Override
     public List<Genre> findById(List<Long> id) {
         if (id == null || id.isEmpty()) {
             return Collections.emptyList();

@@ -42,28 +42,28 @@ public class UserService {
         validateUniqueEmail(user.getEmail(), null, "create");
         ValidationUser.setNameIsBlank(user);
         User saved = userStorage.save(user);
-        log.info("User created: email={}, id={}", saved.getEmail(), saved.getId());
+        log.info("Пользователь создан: email={}, id={}", saved.getEmail(), saved.getId());
         return saved;
     }
 
     public User update(User user) {
         if (user.getId() == null) {
-            log.warn("Update failed: userId is null");
+            log.warn("Ошибка обновления пользователя: userId is null");
             throw new ValidationException("ID не может быть пустым");
         }
 
-        validateService.validateUserExists(user.getId(), "update user");
+        validateService.validateUserExists(user.getId(), "пользователь обновлен");
         validateUniqueEmail(user.getEmail(), user.getId(), "update");
         ValidationUser.setNameIsBlank(user);
 
         User updated = userStorage.update(user);
-        log.info("User updated: email={}, id={}", updated.getEmail(), updated.getId());
+        log.info("Обновление пользователя: email={}, id={}", updated.getEmail(), updated.getId());
         return updated;
     }
 
     public void addFriend(Long userId, Long friendId) {
-        validateService.validateUserExists(userId, "add friend");
-        validateService.validateUserExists(friendId, "add friend");
+        validateService.validateUserExists(userId, "ошибка добавления в друзья");
+        validateService.validateUserExists(friendId, "ошибка добавления в друзья");
         if (userId.equals(friendId)) {
             throw new ValidationException("Нельзя добавить себя в друзья");
         }
@@ -76,15 +76,16 @@ public class UserService {
                 friendId
         );
 
-        log.info("Friend added: userId={}, friendId={}", userId, friendId);
+        log.info("Друг добавлен: userId={}, friendId={}", userId, friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
         if (userId.equals(friendId)) {
-            log.warn("Remove friends failed: userId == friendId, userId={}", friendId);
+            log.warn("Ошибка удаления из друзей: userId == friendId, userId={}", friendId);
+            throw new ValidationException("Нельзя удалить самого себя из друзей");
         }
-        validateService.validateUserExists(userId, "remove friend");
-        validateService.validateUserExists(friendId, "remove friend");
+        validateService.validateUserExists(userId, "Ошибка удаления из друзей");
+        validateService.validateUserExists(friendId, "Ошибка удаления из друзей");
         friendshipStorage.removeFriend(userId, friendId);
 
         feedService.addEvent(
@@ -94,7 +95,7 @@ public class UserService {
                 friendId
         );
 
-        log.info("Friend removed: userId={}, friendId={}", userId, friendId);
+        log.info("Друг удален: userId={}, friendId={}", userId, friendId);
     }
 
     public void removeUserById(Long userId) {
@@ -103,20 +104,21 @@ public class UserService {
     }
 
     public Collection<User> findFriends(Long userId) {
-        validateService.validateUserExists(userId, "find friends");
+        validateService.validateUserExists(userId, "Ошибка в поиске друга");
 
-        log.info("Find friends for userId={}", userId);
+        log.info("Поиск друга у  userId={}", userId);
         return friendshipStorage.findFriends(userId);
     }
 
     public Collection<User> findCommonFriends(Long userId, Long otherId) {
         if (userId.equals(otherId)) {
-            log.warn("Find common friends failed: userId == otherId, userId={}", userId);
+            log.warn("Ошибка поиска общих друзей: userId == otherId, userId={}", userId);
+            throw new ValidationException("Нельзя искать общих друзей с самим собой");
         }
-        validateService.validateUserExists(userId, "find common friends");
-        validateService.validateUserExists(otherId, "find common friends");
+        validateService.validateUserExists(userId, "Ошибка поиска общих друзей");
+        validateService.validateUserExists(otherId, "Ошибка поиска общих друзей");
 
-        log.info("Find common friends: userId={}, otherId={}", userId, otherId);
+        log.info("Поиск общих друзей: userId={}, otherId={}", userId, otherId);
         return friendshipStorage.findCommonFriend(userId, otherId);
     }
 
@@ -124,7 +126,7 @@ public class UserService {
     private void validateUniqueEmail(String email, Long userId, String operation) {
         Optional<User> user = userStorage.findByEmail(email);
         if (user.isPresent() && !user.get().getId().equals(userId)) {
-            log.warn("Email already used: email={}, existingUserId={}, operation{}",
+            log.warn("Email уже использовался: email={}, existingUserId={}, operation{}",
                     email, user.get().getId(), operation);
             throw new ValidationException("Этот Email уже используется");
         }

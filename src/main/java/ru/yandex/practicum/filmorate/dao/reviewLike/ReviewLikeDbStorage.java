@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.mappers.ReviewLikeRowMapper;
+
 
 @Repository
 @RequiredArgsConstructor
@@ -12,8 +12,6 @@ import ru.yandex.practicum.filmorate.mappers.ReviewLikeRowMapper;
 public class ReviewLikeDbStorage implements ReviewLikeStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final ReviewLikeRowMapper reviewLikeRowMapper;
-
 
     @Override
     public void addLike(Long reviewId, Long userId) {

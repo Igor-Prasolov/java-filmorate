@@ -9,9 +9,6 @@ public interface FriendshipStorage {
 
     void removeFriend(Long userId, Long friendId);
 
-
-    boolean areFriends(Long userId, Long friendId);
-
     List<User> findFriends(Long userId);
 
     List<User> findCommonFriend(Long userId, Long otherId);
