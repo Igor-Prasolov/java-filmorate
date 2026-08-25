@@ -63,13 +63,16 @@ public class ReviewService {
         validateReviewExists(review.getReviewId(),
                 "Отзыв с id {} не найден при обновлении");
 
+        Review oldReview = reviewDbStorage.findById(review.getReviewId())
+                .orElseThrow(() -> new NotFoundException("Отзыв с id " + review.getReviewId() + " не найден"));
+
         Review update = reviewDbStorage.update(review);
 
         feedService.addEvent(
                 update.getUserId(),
                 EventType.REVIEW,
                 EventOperation.UPDATE,
-                update.getFilmId()
+                oldReview.getFilmId()
         );
 
         log.info("Отзыв с id {} обновлен", update.getFilmId());
@@ -84,11 +87,12 @@ public class ReviewService {
 
         Review review = reviewDbStorage.findById(reviewId).get();
         Long filmId = review.getFilmId();
+        Long userId = review.getUserId();
 
         reviewDbStorage.delete(reviewId);
 
         feedService.addEvent(
-                review.getUserId(),
+                userId,
                 EventType.REVIEW,
                 EventOperation.REMOVE,
                 filmId
