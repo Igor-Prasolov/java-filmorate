@@ -110,7 +110,7 @@ public class FilmsDbStorage implements FilmStorage {
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             saveDirector(filmId, film.getDirectors());
         }
-        return film;
+        return findById(filmId).orElseThrow();
     }
 
     @Override
