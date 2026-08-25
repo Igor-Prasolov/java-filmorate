@@ -202,12 +202,12 @@ public class ReviewService {
     private void removeReviewLike(Long reviewId, Long userId, boolean isLike) {
         if (isLike) {
             if (!reviewLikeStorage.existsLike(reviewId, userId)) {
-                return;
+                throw new ValidationException("Вы не ставили лайк этому отзыву");
             }
             reviewLikeStorage.removeLike(reviewId, userId);
         } else {
             if (!reviewLikeStorage.existsDislike(reviewId, userId)) {
-                return;
+                throw new ValidationException("Вы не ставили лайк этому отзыву");
             }
             reviewLikeStorage.removeDislike(reviewId, userId);
         }
