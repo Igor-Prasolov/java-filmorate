@@ -23,6 +23,7 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setMpaId(rs.getLong("mpa_id"));
         film.setMpa(null);
         film.setGenres(new LinkedHashSet<>());
+        film.setDirectors(new LinkedHashSet<>());
 
         return film;
     }

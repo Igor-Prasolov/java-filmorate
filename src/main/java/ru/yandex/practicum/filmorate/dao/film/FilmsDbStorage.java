@@ -172,7 +172,7 @@ public class FilmsDbStorage implements FilmStorage {
                 FROM genres AS g
                 JOIN film_genre AS fg ON g.id = fg.genre_id
                 WHERE fg.film_id = ?
-                ORDER BY g.id
+                ORDER BY g.id ASC
                 """;
         List<Genre> genreList = jdbcTemplate.query(genreSql, genreRowMapper, film.getId());
         film.setGenres(new LinkedHashSet<>(genreList));
@@ -182,7 +182,7 @@ public class FilmsDbStorage implements FilmStorage {
                 FROM directors d
                 JOIN film_directors fd ON d.id = fd.director_id
                 WHERE fd.film_id = ?
-                ORDER BY d.id
+                ORDER BY d.id ASC
                 """;
         List<Director> directorList = jdbcTemplate.query(directorSql, directorRowMapper, film.getId());
         film.setDirectors(new LinkedHashSet<>(directorList));
