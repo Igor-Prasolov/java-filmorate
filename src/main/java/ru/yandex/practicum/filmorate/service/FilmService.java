@@ -141,6 +141,60 @@ public class FilmService {
         return likesStorage.findPopularFilm(count, genreId, year);
     }
 
+    public Collection<Film> searchFilms(String query, String by) {
+
+        if (query == null || query.isBlank()) {
+            log.warn("Поиск отклонён: query пустой или null");
+            throw new ValidationException("Параметр query не может быть пустым");
+        }
+
+
+        if (by == null || by.isBlank()) {
+            log.warn("Поиск отклонён: by пустой или null");
+            throw new ValidationException("Параметр by не может быть пустым");
+        }
+
+
+        String[] byParts = by.split(",");
+        boolean hasTitle = false;
+        boolean hasDirector = false;
+
+        for (String part : byParts) {
+            String trimmed = part.trim().toLowerCase();
+            if ("title".equals(trimmed)) {
+                hasTitle = true;
+            } else if ("director".equals(trimmed)) {
+                hasDirector = true;
+            } else {
+                log.warn("Поиск отклонён: недопустимое значение в by = {}", trimmed);
+                throw new ValidationException(
+                        "Параметр by должен содержать 'title' и/или 'director'. Получено: " + by
+                );
+            }
+        }
+
+
+        if (!hasTitle && !hasDirector) {
+            log.warn("Поиск отклонён: by не содержит допустимых значений");
+            throw new ValidationException(
+                    "Параметр by должен содержать 'title' и/или 'director'"
+            );
+        }
+
+
+        String normalizedBy;
+        if (hasTitle && hasDirector) {
+            normalizedBy = "both";
+        } else if (hasTitle) {
+            normalizedBy = "title";
+        } else {
+            normalizedBy = "director";
+        }
+
+        log.info("Поиск фильмов: query={}, by={}, normalizedBy={}", query, by, normalizedBy);
+        return likesStorage.searchFilms(query, normalizedBy);
+    }
+
     public Film findById(Long id) {
         return filmStorage.findById(id)
                 .orElseThrow(() -> {
