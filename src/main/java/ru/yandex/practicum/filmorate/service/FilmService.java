@@ -107,7 +107,7 @@ public class FilmService {
 
         if (!likesStorage.existsLike(filmId, userId)) {
             log.warn("Ошибка: пользователь {} не лайкал фильм {}", userId, filmId);
-            return;
+            throw new ValidationException("Пользователь не лайкал фильм");
         }
 
         likesStorage.removeLike(filmId, userId);
