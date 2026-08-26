@@ -69,7 +69,7 @@ public class ReviewService {
         Review update = reviewDbStorage.update(review);
 
         feedService.addEvent(
-                update.getUserId(),
+                oldReview.getUserId(),
                 EventType.REVIEW,
                 EventOperation.UPDATE,
                 oldReview.getFilmId()
