@@ -55,7 +55,7 @@ public class FeedDbStorage implements FeedStorage {
                        timestamp
                 FROM feed_events
                 WHERE user_id = ?
-                ORDER BY timestamp, event_id
+                ORDER BY event_id ASC
                 """;
         return jdbcTemplate.query(
                 sql,
