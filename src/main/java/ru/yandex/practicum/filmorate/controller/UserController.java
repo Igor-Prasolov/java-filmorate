@@ -48,7 +48,6 @@ public class UserController {
     @GetMapping("/{id}/feed")
     public Collection<Feed> getFeedByUser(@PathVariable Long id) {
         log.info("Запрос на получение ленты");
-        
         return feedService.getFeedByUser(id);
     }
 
