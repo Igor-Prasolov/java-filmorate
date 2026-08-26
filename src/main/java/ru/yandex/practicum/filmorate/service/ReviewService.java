@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.review.ReviewDbStorage;
+import ru.yandex.practicum.filmorate.dao.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.dao.reviewLike.ReviewLikeStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -18,7 +18,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class ReviewService {
 
-    private final ReviewDbStorage reviewDbStorage;
+    private final ReviewStorage reviewDbStorage;
     private final ValidateService validateService;
     private final ReviewLikeStorage reviewLikeStorage;
     private final FeedService feedService;
@@ -60,8 +60,6 @@ public class ReviewService {
                 "Пользователь с id {} не найден при обновлении отзыва");
         validateService.validateFilmExist(review.getFilmId(),
                 "Фильм с id {} не найден при обновлении отзыва");
-        validateReviewExists(review.getReviewId(),
-                "Отзыв с id {} не найден при обновлении");
 
         Review oldReview = reviewDbStorage.findById(review.getReviewId())
                 .orElseThrow(() -> new NotFoundException("Отзыв с id " + review.getReviewId() + " не найден"));
@@ -85,7 +83,8 @@ public class ReviewService {
         validateReviewIdNotNull(reviewId);
         validateReviewExists(reviewId, "Отзыв с id {} не найден при удалении");
 
-        Review review = reviewDbStorage.findById(reviewId).get();
+        Review review = reviewDbStorage.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("Отзыв с id " + reviewId + " не найден"));
 
         reviewDbStorage.delete(reviewId);
 
@@ -104,7 +103,8 @@ public class ReviewService {
         validateReviewIdNotNull(reviewId);
         validateReviewExists(reviewId, "Отзыв с id {} не найден при поиске по ID");
 
-        return reviewDbStorage.findById(reviewId).get();
+        return reviewDbStorage.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("отзыв с id " + reviewId + " не найден"));
     }
 
 

@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.dao.likes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.dao.film.FilmsDbStorage;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -17,7 +16,6 @@ public class LikesDbStorage implements LikesStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final FilmRowMapper filmRowMapper;
-    private final FilmsDbStorage filmsDbStorage;
 
     @Override
     public List<Film> findCommonFilms(Long userId, Long friendId) {
@@ -34,11 +32,7 @@ public class LikesDbStorage implements LikesStorage {
                        ORDER BY likes_count DESC
                 """;
 
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
-        for (Film film : films) {
-            filmsDbStorage.loadFilmMpaAndGenres(film);
-        }
-        return films;
+        return jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
     }
 
     @Override
@@ -52,7 +46,6 @@ public class LikesDbStorage implements LikesStorage {
         String sql = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, filmdId, userId);
     }
-
 
 
     @Override
@@ -110,11 +103,6 @@ public class LikesDbStorage implements LikesStorage {
             films = jdbcTemplate.query(sql, filmRowMapper, searchPattern, searchPattern);
         }
 
-        for (Film film : films) {
-            filmsDbStorage.loadFilmMpaAndGenres(film);
-        }
-
-
         return films;
     }
 
@@ -152,12 +140,7 @@ public class LikesDbStorage implements LikesStorage {
         }
         params.add(limit);
 
-        List<Film> filmList = jdbcTemplate.query(sql.toString(), filmRowMapper, params.toArray());
-        for (Film film : filmList) {
-            filmsDbStorage.loadFilmMpaAndGenres(film);
-        }
-        return filmList;
-
+        return jdbcTemplate.query(sql.toString(), filmRowMapper, params.toArray());
     }
 
     @Override
@@ -182,13 +165,7 @@ public class LikesDbStorage implements LikesStorage {
                 GROUP BY f.id, f.name, f.description, f.release_date, f.duration, f.mpa_id
                 """ + orderBy;
 
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, directorId);
-
-        for (Film film : films) {
-            filmsDbStorage.loadFilmMpaAndGenres(film);
-        }
-
-        return films;
+        return jdbcTemplate.query(sql, filmRowMapper, directorId);
     }
 
     @Override
@@ -221,19 +198,13 @@ public class LikesDbStorage implements LikesStorage {
                 ORDER BY f.id
                 """;
 
-        List<Film> films = jdbcTemplate.query(
+        return jdbcTemplate.query(
                 sql,
                 filmRowMapper,
                 userId,
                 userId,
                 userId
         );
-
-        for (Film film : films) {
-            filmsDbStorage.loadFilmMpaAndGenres(film);
-        }
-
-        return films;
     }
 
 }

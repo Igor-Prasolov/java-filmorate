@@ -17,4 +17,6 @@ public interface FilmStorage {
     void deleteById(Long id);
 
     boolean existsById(Long id);
+
+    void loadFilmMpaAndGenres(Film film);
 }

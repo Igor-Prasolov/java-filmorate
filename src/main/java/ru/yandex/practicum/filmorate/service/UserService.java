@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.film.FilmStorage;
 import ru.yandex.practicum.filmorate.dao.friendship.FriendshipStorage;
 import ru.yandex.practicum.filmorate.dao.user.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -25,6 +26,7 @@ public class UserService {
     private final ValidateService validateService;
     private final FeedService feedService;
     private final LikesStorage likesStorage;
+    private final FilmStorage filmStorage;
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -138,7 +140,12 @@ public class UserService {
                 "Ошибка получения рекомендаций: пользователь с ID {} не найден"
         );
 
-        return likesStorage.findRecommendations(userId);
+
+        List<Film> films = likesStorage.findRecommendations(userId);
+        for (Film film : films) {
+            filmStorage.loadFilmMpaAndGenres(film);
+        }
+        return films;
     }
 
 }

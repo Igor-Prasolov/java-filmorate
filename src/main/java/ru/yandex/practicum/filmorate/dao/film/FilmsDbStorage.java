@@ -164,6 +164,7 @@ public class FilmsDbStorage implements FilmStorage {
         return count != null && count > 0;
     }
 
+    @Override
     public void loadFilmMpaAndGenres(Film film) {
         Long mpaId = film.getMpaId();
         if (mpaId != null) {
@@ -191,7 +192,6 @@ public class FilmsDbStorage implements FilmStorage {
                 """;
         List<Director> directorList = jdbcTemplate.query(directorSql, directorRowMapper, film.getId());
         film.setDirectors(new LinkedHashSet<>(directorList));
-
     }
 
     private Long extractMpaId(Film film) {

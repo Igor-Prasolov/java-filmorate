@@ -89,7 +89,6 @@ public class FilmService {
         }
 
 
-
         feedService.addEvent(
                 userId,
                 EventType.LIKE,
@@ -134,7 +133,8 @@ public class FilmService {
             throw new ValidationException("Год не может быть меньше 1895");
         }
 
-        return likesStorage.findPopularFilm(count, genreId, year);
+        List<Film> filmList = likesStorage.findPopularFilm(count, genreId, year);
+        return loadFullFilmData(filmList);
     }
 
     public Collection<Film> searchFilms(String query, String by) {
@@ -188,7 +188,9 @@ public class FilmService {
         }
 
         log.info("Поиск фильмов: query={}, by={}, normalizedBy={}", query, by, normalizedBy);
-        return likesStorage.searchFilms(query, normalizedBy);
+
+        List<Film> filmList = likesStorage.searchFilms(query, normalizedBy);
+        return loadFullFilmData(filmList);
     }
 
     public Film findById(Long id) {
@@ -202,7 +204,12 @@ public class FilmService {
     public Collection<Film> findCommonFilms(Long userId, Long friendId) {
         validateService.validateUserExists(userId, "Ошибка вывода: пользователь с ID {} не найден");
         validateService.validateUserExists(friendId, "Ошибка вывода: друг с ID {} не найден");
-        return likesStorage.findCommonFilms(userId, friendId);
+        if (userId.equals(friendId)) {
+            log.warn("попытка найти общий фильм у самого себя. Метод findCommonFilms");
+            throw new ValidationException("Параметр ID друга не должен совпадать с вашим");
+        }
+        List<Film> filmList = likesStorage.findCommonFilms(userId, friendId);
+        return loadFullFilmData(filmList);
     }
 
     public Collection<Film> findFilmsByDirector(Long directorId, String sortBy) {
@@ -216,11 +223,12 @@ public class FilmService {
         }
 
         log.info("Поиск фильмов режиссёра id={}, сортировка={}", directorId, sortBy);
-        return likesStorage.findFilmsByDirectorSorted(directorId, sortBy);
+        List<Film> filmList = likesStorage.findFilmsByDirectorSorted(directorId, sortBy);
+        return loadFullFilmData(filmList);
     }
 
     public void deleteFilmById(Long id) {
-        validateService.validateFilmExist(id, "Фильм с id {} при удалении пользователя не найден");
+        validateService.validateFilmExist(id, "Фильм с id {} при удалении фильма по ID не найден");
         filmStorage.deleteById(id);
     }
 
@@ -271,8 +279,17 @@ public class FilmService {
                     directorId.size(), existingDirector.size());
             throw new NotFoundException("Режиссёры не найдены");
         }
+    }
 
+    private List<Film> loadFullFilmData(List<Film> films) {
+        if (films == null || films.isEmpty()) {
+            return films;
+        }
 
+        for (Film film : films) {
+            filmStorage.loadFilmMpaAndGenres(film);
+        }
+        return films;
     }
 
 }
