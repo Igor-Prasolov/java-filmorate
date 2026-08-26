@@ -44,7 +44,7 @@ public class ReviewService {
                 saved.getUserId(),
                 EventType.REVIEW,
                 EventOperation.ADD,
-                saved.getFilmId()
+                saved.getReviewId()
         );
 
         log.info("Пользователь с id {} написал отзыв с id {} на фильм с id {}",
@@ -72,7 +72,7 @@ public class ReviewService {
                 oldReview.getUserId(),
                 EventType.REVIEW,
                 EventOperation.UPDATE,
-                oldReview.getFilmId()
+                oldReview.getReviewId()
         );
 
         log.info("Отзыв с id {} обновлен", update.getFilmId());
@@ -93,7 +93,7 @@ public class ReviewService {
                 review.getUserId(),
                 EventType.REVIEW,
                 EventOperation.REMOVE,
-                review.getFilmId()
+                review.getReviewId()
         );
 
         log.info("Отзыв с id {} удален", reviewId);

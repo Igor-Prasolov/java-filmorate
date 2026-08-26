@@ -84,12 +84,11 @@ public class FilmService {
         validateService.validateFilmExist(filmId, "Ошибка лайка: фильм с ID {} не найден");
         validateService.validateUserExists(userId, "Ошибка лайка: пользователь с ID {} не найден");
 
-        if (likesStorage.existsLike(filmId, userId)) {
-            log.warn("Ошибка: пользователь {} уже лайкнул фильм {}", userId, filmId);
-            return;
+        if (!likesStorage.existsLike(filmId, userId)) {
+            likesStorage.addLike(filmId, userId);
         }
 
-        likesStorage.addLike(filmId, userId);
+
 
         feedService.addEvent(
                 userId,
