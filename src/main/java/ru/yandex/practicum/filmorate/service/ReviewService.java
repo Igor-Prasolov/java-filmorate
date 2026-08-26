@@ -86,13 +86,12 @@ public class ReviewService {
         validateReviewExists(reviewId, "Отзыв с id {} не найден при удалении");
 
         Review review = reviewDbStorage.findById(reviewId).get();
-        Long filmId = review.getFilmId();
         Long userId = review.getUserId();
 
         reviewDbStorage.delete(reviewId);
 
         feedService.addEvent(
-                userId,
+                review.getUserId(),
                 EventType.REVIEW,
                 EventOperation.REMOVE,
                 reviewId
