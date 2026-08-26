@@ -2,11 +2,15 @@ package ru.yandex.practicum.filmorate.dao.feed;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.feed.EventOperation;
 import ru.yandex.practicum.filmorate.model.feed.EventType;
 import ru.yandex.practicum.filmorate.model.feed.Feed;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.Collection;
 
 @Repository
@@ -23,14 +27,21 @@ public class FeedDbStorage implements FeedStorage {
                 VALUES (?, ?, ?, ?, ?)
                 """;
 
-        jdbcTemplate.update(
-                sql,
-                feed.getUserId(),
-                feed.getEventType().name(),
-                feed.getOperation().name(),
-                feed.getEntityId(),
-                feed.getTimestamp()
-        );
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setLong(1, feed.getUserId());
+            ps.setString(2, feed.getEventType().name());
+            ps.setString(3, feed.getOperation().name());
+            ps.setLong(4, feed.getEntityId());
+            ps.setLong(5, feed.getTimestamp());
+            return ps;
+        }, keyHolder);
+
+        feed.setEventId(keyHolder.getKey().longValue());
+
+
     }
 
     @Override
