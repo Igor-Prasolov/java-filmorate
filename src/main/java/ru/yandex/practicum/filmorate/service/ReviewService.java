@@ -207,7 +207,7 @@ public class ReviewService {
             reviewLikeStorage.removeLike(reviewId, userId);
         } else {
             if (!reviewLikeStorage.existsDislike(reviewId, userId)) {
-                throw new ValidationException("Вы не ставили лайк этому отзыву");
+                throw new ValidationException("Вы не ставили дизлайк этому отзыву");
             }
             reviewLikeStorage.removeDislike(reviewId, userId);
         }
