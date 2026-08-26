@@ -41,9 +41,8 @@ public class ReviewDbStorage implements ReviewStorage {
             return ps;
         }, keyHolder);
 
-        Map<String, Object> keys = keyHolder.getKeys();
-        Long reviewsId = (Long) keys.get("ID");
-        review.setReviewId(reviewsId);
+        Long reviewId = keyHolder.getKey().longValue();
+        review.setReviewId(reviewId);
 
         return review;
     }
