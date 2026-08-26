@@ -44,7 +44,7 @@ public class ReviewService {
                 saved.getUserId(),
                 EventType.REVIEW,
                 EventOperation.ADD,
-                saved.getReviewId()
+                saved.getFilmId()
         );
 
         log.info("Пользователь с id {} написал отзыв с id {} на фильм с id {}",
@@ -72,7 +72,7 @@ public class ReviewService {
                 oldReview.getUserId(),
                 EventType.REVIEW,
                 EventOperation.UPDATE,
-                oldReview.getReviewId()
+                oldReview.getFilmId()
         );
 
         log.info("Отзыв с id {} обновлен", update.getFilmId());
@@ -86,7 +86,6 @@ public class ReviewService {
         validateReviewExists(reviewId, "Отзыв с id {} не найден при удалении");
 
         Review review = reviewDbStorage.findById(reviewId).get();
-        Long userId = review.getUserId();
 
         reviewDbStorage.delete(reviewId);
 
@@ -94,7 +93,7 @@ public class ReviewService {
                 review.getUserId(),
                 EventType.REVIEW,
                 EventOperation.REMOVE,
-                reviewId
+                review.getFilmId()
         );
 
         log.info("Отзыв с id {} удален", reviewId);
