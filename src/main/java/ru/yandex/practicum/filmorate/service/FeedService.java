@@ -14,6 +14,7 @@ import java.util.Collection;
 public class FeedService {
 
     private final FeedStorage feedStorage;
+    private final ValidateService validateService;
 
     public void addEvent(Long userId, EventType eventType, EventOperation eventOperation, Long entityId) {
         Feed feed = new Feed();
@@ -27,6 +28,7 @@ public class FeedService {
     }
 
     public Collection<Feed> getFeedByUser(Long userId) {
+        validateService.validateUserExists(userId, "Пользователь с ID {} не найден при получении ленты");
         return feedStorage.getFeedByUser(userId);
     }
 }
