@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -40,7 +41,8 @@ public class ReviewDbStorage implements ReviewStorage {
             return ps;
         }, keyHolder);
 
-        Long reviewId = keyHolder.getKey().longValue();
+        Map<String, Object> keys = keyHolder.getKeys();
+        Long reviewId = (Long) keys.get("ID");
         review.setReviewId(reviewId);
 
         return review;
