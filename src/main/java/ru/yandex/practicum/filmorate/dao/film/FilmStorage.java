@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.film;
 
-import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -17,4 +17,6 @@ public interface FilmStorage {
     void deleteById(Long id);
 
     boolean existsById(Long id);
+
+    void loadFilmMpaAndGenres(Film film);
 }

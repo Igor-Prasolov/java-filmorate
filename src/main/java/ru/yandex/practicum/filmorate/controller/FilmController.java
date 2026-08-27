@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
@@ -24,16 +24,41 @@ public class FilmController {
         return filmService.findAll();
     }
 
+
     @GetMapping("/popular")
-    public Collection<Film> getPopularFilm(@RequestParam(required = false) Integer count) {
-        log.info("Запрос на получение популярных фильмов");
-        return filmService.findPopularFilms(count);
+    public Collection<Film> getMostPopularsFilm(@RequestParam(required = false) Integer count,
+                                                @RequestParam(required = false) Long genreId,
+                                                @RequestParam(required = false) Integer year) {
+        log.info("Запрос на получение популярных фильмов по трем параметрам");
+        return filmService.findPopularFilms(count, genreId, year);
     }
 
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable Long id) {
         log.info("Запрос на получение фильма по id={}", id);
         return filmService.findById(id);
+    }
+
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
+        log.info("Запрос на получение общих фильмов");
+        return filmService.findCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getFilmsByDirector(
+            @PathVariable Long directorId,
+            @RequestParam String sortBy) {
+        log.info("Запрос на получение фильмов режиссёра id={}, сортировка={}", directorId, sortBy);
+        return filmService.findFilmsByDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(
+            @RequestParam String query,
+            @RequestParam String by) {
+        log.info("Запрос на поиск фильмов: query={}, by={}", query, by);
+        return filmService.searchFilms(query, by);
     }
 
     @PostMapping
@@ -61,5 +86,12 @@ public class FilmController {
         log.info("Запрос на удаление лайка");
         filmService.removeLike(id, userId);
     }
+
+    @DeleteMapping("/{filmId}")
+    public void removeFilmById(@PathVariable Long filmId) {
+        log.info("Запрос на удаление фильма по id");
+        filmService.deleteFilmById(filmId);
+    }
+
 
 }

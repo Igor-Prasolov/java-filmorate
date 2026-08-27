@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.film.Genre;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.mappers.GenreRowMapper;
 
 import java.util.Collection;
@@ -40,13 +40,6 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public boolean existsById(Long id) {
-        String sql = "SELECT COUNT(*) FROM genres WHERE id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
-        return count != null && count > 0;
-    }
-
-    @Override
     public List<Genre> findById(List<Long> id) {
         if (id == null || id.isEmpty()) {
             return Collections.emptyList();
@@ -54,7 +47,7 @@ public class GenreDbStorage implements GenreStorage {
 
         String sql = "SELECT * FROM genres WHERE id IN (" +
                 id.stream().map(String::valueOf).collect(Collectors.joining(",")) +
-                ")";
+                ") ORDER BY id";
 
         return jdbcTemplate.query(sql, genreRowMapper);
     }

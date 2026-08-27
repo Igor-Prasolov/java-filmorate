@@ -5,7 +5,9 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.model.film.Film;
+
+import ru.yandex.practicum.filmorate.model.Film;
+
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -80,18 +82,6 @@ class FilmTest {
         film.setName("Начало");
         film.setReleaseDate(LocalDate.of(2010, 7, 16));
         film.setDuration(-10);
-
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
-    }
-
-
-    @Test
-    void filmReleaseDateShouldNotBeFuture() {
-        Film film = new Film();
-        film.setName("Начало");
-        film.setReleaseDate(LocalDate.now().plusDays(1));
-        film.setDuration(148);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertFalse(violations.isEmpty());

@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FeedService;
 import ru.yandex.practicum.filmorate.service.UserService;
-
 
 import java.util.Collection;
 
@@ -16,7 +18,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-
+    private final FeedService feedService;
 
     @GetMapping
     public Collection<User> findAll() {
@@ -41,6 +43,18 @@ public class UserController {
                                               @PathVariable Long otherId) {
         log.info("Запрос на получение списка общих друзей");
         return userService.findCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public Collection<Feed> getFeedByUser(@PathVariable Long id) {
+        log.info("Запрос на получение ленты");
+        return feedService.getFeedByUser(id);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> getRecommendations(@PathVariable Long id) {
+        log.info("Запрос рекомендаций для пользователя с id={}", id);
+        return userService.getRecommendations(id);
     }
 
     @PostMapping
@@ -69,5 +83,10 @@ public class UserController {
         userService.removeFriend(id, friendId);
     }
 
+    @DeleteMapping("/{userId}")
+    public void removeUserById(@PathVariable Long userId) {
+        log.info("Запрос на удаление пользователя по id");
+        userService.removeUserById(userId);
+    }
 
 }

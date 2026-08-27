@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model.film;
+package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -18,13 +18,14 @@ public class Film {
     private String description;
 
     @NotNull(message = "Дата релиза не указана")
-    @PastOrPresent(message = "Дата релиза некорректна")
     private LocalDate releaseDate;
 
     @NotNull(message = "Продолжительность фильма не указана")
     @Positive(message = "Продолжительность фильма должна быть положительной")
     private Integer duration;
 
+    private Set<Director> directors;
+    private Long directorId;
     private Set<Genre> genres;
     private MPA mpa;
     private Long mpaId;
